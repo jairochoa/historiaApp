@@ -1,0 +1,21 @@
+# Entorno Virtual de Python
+.virtual_env/
+
+# Base de Datos (¡Contiene datos médicos sensibles!)
+/data/pacientes.db
+/data/*.db
+
+# Imágenes subidas (¡Contiene datos médicos sensibles!)
+/data/imagenes/
+
+# Archivos de configuración que no deben ser públicos
+/config/config.yaml
+
+# Archivos de caché y logs
+__pycache__/
+/logs/
+*.log
+
+# Caché de herramientas de desarrollo
+.vscode/
+.idea/
