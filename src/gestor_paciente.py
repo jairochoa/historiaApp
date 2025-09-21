@@ -1,0 +1,190 @@
+import sqlite3
+import hashlib # Librería para encriptar contraseñas
+from database import obtener_conexion_db
+
+# --- Funciones de Usuarios y Seguridad ---
+
+def _hash_password(password):
+    """Función interna para encriptar una contraseña usando SHA-256."""
+    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+def registrar_usuario(username, password):
+    """Registra un nuevo usuario en la base de datos con una contraseña encriptada."""
+    conn = obtener_conexion_db()
+    cursor = conn.cursor()
+    
+    password_hash = _hash_password(password)
+    
+    try:
+        cursor.execute("INSERT INTO usuarios (username, password_hash) VALUES (?, ?)", (username, password_hash))
+        conn.commit()
+        print(f"Usuario '{username}' registrado exitosamente.")
+    except sqlite3.IntegrityError:
+        print(f"Error: El nombre de usuario '{username}' ya existe.")
+    finally:
+        conn.close()
+
+def verificar_usuario(username, password):
+    """Verifica si el username y la contraseña son correctos."""
+    conn = obtener_conexion_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT password_hash FROM usuarios WHERE username = ?", (username,))
+    record = cursor.fetchone()
+    conn.close()
+    
+    if record:
+        stored_hash = record[0]
+        input_hash = _hash_password(password)
+        if stored_hash == input_hash:
+            print("Login exitoso.")
+            return True
+    
+    print("Login fallido: usuario o contraseña incorrectos.")
+    return False
+
+# --- Funciones de Pacientes ---
+
+def agregar_paciente(cedula, nombres, apellidos, fecha_nacimiento, telefono):
+    """Añade un nuevo paciente a la base de datos."""
+    conn = obtener_conexion_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute(
+            "INSERT INTO pacientes (cedula, nombres, apellidos, fecha_nacimiento, telefono) VALUES (?, ?, ?, ?, ?)",
+            (cedula, nombres, apellidos, fecha_nacimiento, telefono)
+        )
+        conn.commit()
+        print(f"Paciente '{nombres} {apellidos}' agregado exitosamente.")
+        return cursor.lastrowid # Devuelve el ID interno del nuevo paciente
+    except sqlite3.IntegrityError:
+        print(f"Error: La cédula '{cedula}' ya está registrada.")
+        return None
+    finally:
+        conn.close()
+
+def buscar_paciente_por_cedula(cedula):
+    """Busca un paciente por su cédula y devuelve sus datos y su historial."""
+    conn = obtener_conexion_db()
+    # Hacemos que los resultados vengan como diccionarios para un manejo más fácil
+    conn.row_factory = sqlite3.Row 
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT * FROM pacientes WHERE cedula = ?", (cedula,))
+    paciente_record = cursor.fetchone()
+    
+    if not paciente_record:
+        conn.close()
+        return None, [] # Paciente no encontrado
+
+    # Convertimos el registro del paciente a un diccionario
+    paciente_dict = dict(paciente_record)
+    
+    # Ahora buscamos todas sus consultas asociadas
+    cursor.execute("SELECT * FROM consultas WHERE paciente_id = ? ORDER BY fecha DESC", (paciente_dict['id'],))
+    consultas_records = cursor.fetchall()
+    
+    # Convertimos cada registro de consulta a un diccionario
+    consultas_list = [dict(consulta) for consulta in consultas_records]
+    
+    conn.close()
+    return paciente_dict, consultas_list
+
+def obtener_todos_los_pacientes():
+    """Devuelve una lista de todos los pacientes registrados."""
+    conn = obtener_conexion_db()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT id, cedula, nombres, apellidos FROM pacientes ORDER BY apellidos, nombres")
+    pacientes_records = cursor.fetchall()
+    conn.close()
+    
+    return [dict(paciente) for paciente in pacientes_records]
+
+# --- Funciones de Consultas ---
+
+def agregar_consulta(paciente_id, fecha, motivo, valoracion, tratamiento, ruta_imagen=None):
+    """Añade una nueva consulta para un paciente existente."""
+    conn = obtener_conexion_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute(
+            """INSERT INTO consultas (paciente_id, fecha, motivo_consulta, valoracion, tratamiento, ruta_imagen)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (paciente_id, fecha, motivo, valoracion, tratamiento, ruta_imagen)
+        )
+        conn.commit()
+        print(f"Nueva consulta para el paciente ID {paciente_id} agregada exitosamente.")
+        return cursor.lastrowid
+    except Exception as e:
+        print(f"Error al agregar la consulta: {e}")
+        return None
+    finally:
+        conn.close()
+
+def buscar_paciente_por_id(paciente_id):
+    """Busca un paciente por su ID interno y devuelve sus datos y consultas."""
+    conn = obtener_conexion_db()
+    conn.row_factory = sqlite3.Row 
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT * FROM pacientes WHERE id = ?", (paciente_id,))
+    paciente_record = cursor.fetchone()
+    
+    if not paciente_record:
+        conn.close()
+        return None, []
+
+    paciente_dict = dict(paciente_record)
+    
+    cursor.execute("SELECT * FROM consultas WHERE paciente_id = ? ORDER BY fecha DESC", (paciente_id,))
+    consultas_records = cursor.fetchall()
+    
+    consultas_list = [dict(consulta) for consulta in consultas_records]
+    
+    conn.close()
+    return paciente_dict, consultas_list
+
+        
+if __name__ == '__main__':
+    # --- PRUEBAS ---
+    print("\n--- INICIANDO PRUEBAS DEL GESTOR ---")
+    
+    # 1. Registrar un usuario (solo se necesita la primera vez)
+    # registrar_usuario("DraAna", "contraseña_segura_123")
+    
+    # 2. Verificar el login
+    verificar_usuario("DraYasmin", "contraseña_segura_123")
+    verificar_usuario("DraYasmin", "contraseña_incorrecta")
+    
+    print("\n--- Pruebas de Pacientes ---")
+    # 3. Agregar un paciente nuevo
+    agregar_paciente("V12345678", "Ana", "Suarez", "1985-05-10", "555-1234")
+    
+    # 4. Intentar agregar el mismo paciente de nuevo (debería fallar)
+    agregar_paciente("V13996491", "Yasmin", "Ramirez", "1985-05-10", "555-1234")
+    
+    # 5. Buscar al paciente y su historial (que estará vacío por ahora)
+    paciente, consultas = buscar_paciente_por_cedula("V12345678")
+    if paciente:
+        print(f"\nPaciente encontrado: {paciente['nombres']} {paciente['apellidos']}")
+        
+        # 6. Agregarle dos consultas
+        paciente_id_interno = paciente['id']
+        agregar_consulta(paciente_id_interno, "2025-09-20", "Chequeo general", "Paciente refiere buen estado de salud.", "Continuar dieta.")
+        agregar_consulta(paciente_id_interno, "2025-09-21", "Dolor de cabeza", "Migraña por estrés.", "Analgésicos y reposo.")
+        
+        # 7. Volver a buscarlo para ver su historial completo
+        paciente_actualizado, consultas_actualizadas = buscar_paciente_por_cedula("V12345678")
+        print(f"\nHistorial actualizado para {paciente_actualizado['nombres']}:")
+        for consulta in consultas_actualizadas:
+            print(f"  - Fecha: {consulta['fecha']}, Motivo: {consulta['motivo_consulta']}")
+            
+    # 8. Obtener la lista de todos los pacientes
+    todos_los_pacientes = obtener_todos_los_pacientes()
+    print("\n--- Lista de todos los pacientes ---")
+    for p in todos_los_pacientes:
+        print(f"  - ID: {p['id']}, Cédula: {p['cedula']}, Nombre: {p['nombres']} {p['apellidos']}")
