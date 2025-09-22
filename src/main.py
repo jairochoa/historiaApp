@@ -52,7 +52,7 @@ def buscar_paciente(paciente_id):
 def iniciar_app():
     """Inicia la aplicación de escritorio con Eel."""
     print("Iniciando aplicación...")
-    eel.start('main.html', size=(1024, 768), port=0) # port=0 busca un puerto libre
+    eel.start('main.html', size=(1920, 1080), port=0) # port=0 busca un puerto libre
     print("Aplicación cerrada.")
 
 @eel.expose('agregar_paciente_py')
