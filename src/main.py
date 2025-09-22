@@ -84,7 +84,16 @@ def agregar_consulta(consulta_data):
     else:
         return {'exito': False, 'mensaje': 'Error al guardar la consulta.'}
 
-
+@eel.expose('modificar_paciente_py')
+def modificar_paciente(paciente_id, paciente_data):
+    """Función intermediaria para modificar un paciente desde JS."""
+    print(f"Recibiendo datos para actualizar paciente ID {paciente_id}:", paciente_data)
+    exito = gestor.modificar_paciente(paciente_id, paciente_data)
+    
+    if exito:
+        return {'exito': True, 'mensaje': 'Datos del paciente actualizados correctamente.'}
+    else:
+        return {'exito': False, 'mensaje': 'Error: La cédula ya está registrada para otro paciente.'}
 
 
 if __name__ == "__main__":

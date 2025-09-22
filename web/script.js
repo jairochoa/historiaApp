@@ -2,21 +2,30 @@
 
 // Se declara UNA SOLA VEZ aquí, en el ámbito global.
 let pacienteSeleccionadoId = null;
+let modoFormularioPaciente = 'añadir';
 
 window.onload = function() {
     setupEventListeners();
     cargarListaPacientes();
 };
 
+// en web/script.js
+
 function setupEventListeners() {
     // --- Lógica para el Modal de Nuevo Paciente ---
     const patientModal = document.getElementById('add-patient-modal');
     const addPatientBtn = document.getElementById('add-patient-btn');
     const patientModalCloseBtn = patientModal.querySelector('.close-btn');
+    const patientForm = document.getElementById('patient-form'); // Declarado una sola vez aquí
 
     addPatientBtn.onclick = function() {
+        modoFormularioPaciente = 'añadir';
+        patientForm.reset(); 
+        patientModal.querySelector('h2').textContent = 'Registrar Nuevo Paciente';
+        patientModal.querySelector('button[type="submit"]').textContent = 'Guardar Paciente';
         patientModal.style.display = "block";
     }
+
     patientModalCloseBtn.onclick = function() {
         patientModal.style.display = "none";
     }
@@ -24,6 +33,7 @@ function setupEventListeners() {
     // --- Lógica para el Modal de Nueva Consulta ---
     const consultationModal = document.getElementById('add-consultation-modal');
     const consultationModalCloseBtn = consultationModal.querySelector('.close-btn');
+    const consultationForm = document.getElementById('consultation-form');
 
     consultationModalCloseBtn.onclick = function() {
         consultationModal.style.display = "none";
@@ -39,9 +49,7 @@ function setupEventListeners() {
         }
     }
 
-    // --- Lógica para el envío del Formulario de PACIENTE ---
-    // Le damos un nombre único a la variable del formulario: 'patientForm'
-    const patientForm = document.getElementById('patient-form');
+    // --- Lógica ÚNICA Y CORRECTA para el envío del Formulario de PACIENTE ---
     patientForm.addEventListener('submit', async function(event) {
         event.preventDefault();
 
@@ -55,20 +63,30 @@ function setupEventListeners() {
             comentario: document.getElementById('comentario').value
         };
 
-        const resultado = await eel.agregar_paciente_py(pacienteData)();
+        let resultado;
+        // La condición IF/ELSE es la clave para decidir si añadir o editar
+        if (modoFormularioPaciente === 'editar') {
+            console.log("MODO EDITAR: Enviando actualización para paciente ID:", pacienteSeleccionadoId);
+            resultado = await eel.modificar_paciente_py(pacienteSeleccionadoId, pacienteData)();
+        } else {
+            console.log("MODO AÑADIR: Enviando nuevo paciente a Python:", pacienteData);
+            resultado = await eel.agregar_paciente_py(pacienteData)();
+        }
 
         if (resultado.exito) {
             alert(resultado.mensaje);
             patientModal.style.display = "none";
-            patientForm.reset();
             cargarListaPacientes();
+            // Si estábamos editando, refrescamos la vista de detalles
+            if (modoFormularioPaciente === 'editar') {
+                mostrarDetallesPaciente(pacienteSeleccionadoId);
+            }
         } else {
             alert(resultado.mensaje);
         }
-    })
+    });
 
     // --- Lógica para el envío del Formulario de CONSULTA ---
-    const consultationForm = document.getElementById('consultation-form');
     consultationForm.addEventListener('submit', async function(event) {
         event.preventDefault();
         const consultaData = {
@@ -132,22 +150,31 @@ async function cargarListaPacientes() {
     });
 }
 
+// en web/script.js
+
 async function mostrarDetallesPaciente(pacienteId) {
-    // Se le asigna un valor a la variable global, SIN 'let'.
+    // Asigna el ID del paciente seleccionado a la variable global.
     pacienteSeleccionadoId = pacienteId;
     
+    // Llama a Python para obtener los datos completos del paciente.
     const data = await eel.buscar_paciente_por_id_py(pacienteId)();
     const detailsContainer = document.getElementById('patient-details');
     
+    // Si por alguna razón el paciente no se encuentra, muestra un mensaje y termina.
     if (!data.paciente) {
         detailsContainer.innerHTML = '<p>Error: No se encontraron los datos del paciente.</p>';
         return;
     }
 
+    // Construye el bloque de HTML para los detalles del paciente.
     let html = `
-        <h3>${data.paciente.nombres} ${data.paciente.apellidos}</h3>
+        <div class="details-header">
+            <h3>${data.paciente.nombres} ${data.paciente.apellidos}</h3>
+            <button id="edit-patient-btn" class="btn-secondary">Editar Paciente</button>
+        </div>
         <p><strong>Cédula:</strong> ${data.paciente.cedula}</p>
         <p><strong>Teléfono:</strong> ${data.paciente.telefono}</p>
+        <p><strong>Domicilio:</strong> ${data.paciente.domicilio || '<em>No especificado.</em>'}</p>
         <p><strong>Comentario:</strong> ${data.paciente.comentario || '<em>Sin comentario.</em>'}</p>
         <hr>
         <div class="consultation-header">
@@ -156,9 +183,11 @@ async function mostrarDetallesPaciente(pacienteId) {
         </div>
     `;
 
+    // Construye la lista de consultas si existen.
     if (data.consultas.length > 0) {
         html += '<ul class="consultation-list">';
         data.consultas.forEach(consulta => {
+            // Aquí puedes añadir más detalles de la consulta si quieres
             html += `
                 <li>
                     <strong>Fecha: ${consulta.fecha}</strong><br>
@@ -171,7 +200,32 @@ async function mostrarDetallesPaciente(pacienteId) {
     } else {
         html += '<p>No hay consultas registradas para este paciente.</p>';
     }
+    
+    // Inserta todo el HTML generado en el contenedor de detalles.
     detailsContainer.innerHTML = html;
 
+    // --- Activación de los Botones ---
+
+    // 1. Botón "Editar Paciente"
+    document.getElementById('edit-patient-btn').addEventListener('click', () => {
+        const patientModal = document.getElementById('add-patient-modal');
+        
+        modoFormularioPaciente = 'editar';
+        patientModal.querySelector('h2').textContent = 'Editar Datos del Paciente';
+        patientModal.querySelector('button[type="submit"]').textContent = 'Actualizar Datos';
+
+        // Rellenamos el formulario con los datos del paciente.
+        document.getElementById('cedula').value = data.paciente.cedula;
+        document.getElementById('nombres').value = data.paciente.nombres;
+        document.getElementById('apellidos').value = data.paciente.apellidos;
+        document.getElementById('fecha_nacimiento').value = data.paciente.fecha_nacimiento;
+        document.getElementById('telefono').value = data.paciente.telefono;
+        document.getElementById('domicilio').value = data.paciente.domicilio;
+        document.getElementById('comentario').value = data.paciente.comentario;
+
+        patientModal.style.display = 'block';
+    });
+
+    // 2. Botón "Añadir Consulta" (Forma corregida y simple)
     document.getElementById('add-consultation-btn').addEventListener('click', abrirModalConsulta);
 }

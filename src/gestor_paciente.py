@@ -148,6 +148,52 @@ def buscar_paciente_por_id(paciente_id):
     conn.close()
     return paciente_dict, consultas_list
 
+
+# En src/gestor_pacientes.py
+
+# ... (debajo de las otras funciones de pacientes)
+
+def modificar_paciente(paciente_id, paciente_data):
+    """Actualiza los datos de un paciente existente usando su ID interno."""
+    conn = obtener_conexion_db()
+    cursor = conn.cursor()
+    
+    try:
+        # La sentencia UPDATE modifica una fila existente.
+        # La cláusula WHERE es crucial para asegurar que solo modificamos al paciente correcto.
+        cursor.execute(
+            """UPDATE pacientes SET
+               cedula = ?,
+               nombres = ?,
+               apellidos = ?,
+               fecha_nacimiento = ?,
+               telefono = ?,
+               domicilio = ?,
+               comentario = ?
+               WHERE id = ?""",
+            (
+                paciente_data['cedula'],
+                paciente_data['nombres'],
+                paciente_data['apellidos'],
+                paciente_data['fecha_nacimiento'],
+                paciente_data['telefono'],
+                paciente_data['domicilio'],
+                paciente_data['comentario'],
+                paciente_id
+            )
+        )
+        conn.commit()
+        print(f"Paciente ID {paciente_id} actualizado exitosamente.")
+        return True
+    except sqlite3.IntegrityError:
+        # Esto pasaría si intentas cambiar la cédula a una que ya existe.
+        print(f"Error: La cédula '{paciente_data['cedula']}' ya pertenece a otro paciente.")
+        return False
+    except Exception as e:
+        print(f"Error al modificar el paciente: {e}")
+        return False
+    finally:
+        conn.close()
         
 # if __name__ == '__main__':
 #     # --- PRUEBAS ---
