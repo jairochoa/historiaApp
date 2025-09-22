@@ -219,7 +219,45 @@ def eliminar_paciente(paciente_id):
         return False
     finally:
         conn.close()
+
+# En src/gestor_pacientes.py
+import shutil
+from datetime import datetime
+import os # Asegúrate de que 'os' esté importado
+
+# ... (otras funciones) ...
+
+def crear_copia_de_seguridad_automatica():
+    """
+    Crea una copia de seguridad automática en una carpeta predefinida
+    dentro de los Documentos del usuario.
+    """
+    try:
+        # 1. Definimos la ruta de origen de la base de datos
+        ruta_origen = os.path.join('data', 'pacientes.db')
+        if not os.path.exists(ruta_origen):
+            print("Backup automático omitido: No se encontró la base de datos.")
+            return
+
+        # 2. Definimos una ruta de destino segura y predecible
+        directorio_documentos = os.path.join(os.path.expanduser('~'), 'Documents')
+        carpeta_backups = os.path.join(directorio_documentos, 'Backups_Historial_Medico')
+        os.makedirs(carpeta_backups, exist_ok=True) # Crea la carpeta si no existe
+
+        # 3. Creamos el nombre del archivo de backup con fecha y hora
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        nombre_backup = f"backup-pacientes-{timestamp}.db"
+        ruta_backup_completa = os.path.join(carpeta_backups, nombre_backup)
         
+        # 4. Copiamos el archivo
+        shutil.copy2(ruta_origen, ruta_backup_completa)
+        print(f"Backup automático creado exitosamente en: {ruta_backup_completa}")
+        
+    except Exception as e:
+        # Si el backup falla, no debe detener la aplicación. Solo lo registramos.
+        print(f"ERROR DURANTE EL BACKUP AUTOMÁTICO: {e}")
+
+
     
 # if __name__ == '__main__':
 #     # --- PRUEBAS ---

@@ -55,6 +55,8 @@ def agregar_paciente(paciente_data):
     )
     # Devolvemos un diccionario indicando si fue exitoso
     if nuevo_id:
+        print("Paciente guardado. Iniciando backup automático en segundo plano...")
+        gestor.crear_copia_de_seguridad_automatica()
         return {'exito': True, 'mensaje': 'Paciente agregado correctamente.'}
     else:
         return {'exito': False, 'mensaje': 'Error: La cédula ya está registrada.'}
