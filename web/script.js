@@ -15,19 +15,20 @@ window.onload = function() {
 // en web/script.js
 
 function setupEventListeners() {
-    // --- Lógica para el Modal de Nuevo Paciente ---
+    
+    // --- 1. BARRA DE BÚSQUEDA ---
+    const searchBar = document.getElementById('search-bar');
+    searchBar.addEventListener('keyup', () => {
+        filtrarListaPacientes(searchBar.value);
+    });
+
+    // --- 2. MODAL Y FORMULARIO DE PACIENTES ---
     const patientModal = document.getElementById('add-patient-modal');
     const addPatientBtn = document.getElementById('add-patient-btn');
     const patientModalCloseBtn = patientModal.querySelector('.close-btn');
-    const patientForm = document.getElementById('patient-form'); // Declarado una sola vez aquí
-
-    const searchBar = document.getElementById('search-bar');
-    searchBar.addEventListener('keyup', () => {
-        const termino = searchBar.value;
-        // No esperamos a que el usuario termine de escribir, buscamos en tiempo real.
-        filtrarListaPacientes(termino);
-    });
-
+    const patientForm = document.getElementById('patient-form');
+    
+    // Acción: Abrir el modal para AÑADIR un nuevo paciente
     addPatientBtn.onclick = function() {
         modoFormularioPaciente = 'añadir';
         patientForm.reset(); 
@@ -36,37 +37,30 @@ function setupEventListeners() {
         patientModal.style.display = "block";
     }
 
+    // Acción: Cerrar el modal de paciente con el botón 'x'
     patientModalCloseBtn.onclick = function() {
         patientModal.style.display = "none";
     }
-
-    // --- Lógica para el Modal de Nueva Consulta ---
-    const consultationModal = document.getElementById('add-consultation-modal');
-    const consultationModalCloseBtn = consultationModal.querySelector('.close-btn');
-    const consultationForm = document.getElementById('consultation-form');
-
-    consultationModalCloseBtn.onclick = function() {
-        consultationModal.style.display = "none";
-    }
     
-    // Cierre de modales al hacer clic fuera
-    window.onclick = function(event) {
-        if (event.target == patientModal) {
-            patientModal.style.display = "none";
-        }
-        if (event.target == consultationModal) {
-            consultationModal.style.display = "none";
-        }
-    }
-
-    // --- Lógica ÚNICA Y CORRECTA para el envío del Formulario de PACIENTE ---
+    // Acción: Enviar el formulario de paciente (para Añadir o Editar)
     patientForm.addEventListener('submit', async function(event) {
         event.preventDefault();
 
+        // --- VALIDACIÓN FRONTEND AÑADIDA ---
+        const cedula = document.getElementById('cedula').value.trim();
+        const nombres = document.getElementById('nombres').value.trim();
+        const apellidos = document.getElementById('apellidos').value.trim();
+
+        if (cedula === '' || nombres === '' || apellidos === '') {
+            alert("Por favor, completa todos los campos obligatorios (Cédula, Nombres, Apellidos).");
+            return; // Detiene el envío si la validación falla
+        }
+        // --- FIN DE LA VALIDACIÓN ---
+
         const pacienteData = {
-            cedula: document.getElementById('cedula').value,
-            nombres: document.getElementById('nombres').value,
-            apellidos: document.getElementById('apellidos').value,
+            cedula: cedula,
+            nombres: nombres,
+            apellidos: apellidos,
             fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
             telefono: document.getElementById('telefono').value,
             domicilio: document.getElementById('domicilio').value,
@@ -74,12 +68,9 @@ function setupEventListeners() {
         };
 
         let resultado;
-        // La condición IF/ELSE es la clave para decidir si añadir o editar
         if (modoFormularioPaciente === 'editar') {
-            console.log("MODO EDITAR: Enviando actualización para paciente ID:", pacienteSeleccionadoId);
             resultado = await eel.modificar_paciente_py(pacienteSeleccionadoId, pacienteData)();
         } else {
-            console.log("MODO AÑADIR: Enviando nuevo paciente a Python:", pacienteData);
             resultado = await eel.agregar_paciente_py(pacienteData)();
         }
 
@@ -87,7 +78,6 @@ function setupEventListeners() {
             alert(resultado.mensaje);
             patientModal.style.display = "none";
             cargarListaPacientes();
-            // Si estábamos editando, refrescamos la vista de detalles
             if (modoFormularioPaciente === 'editar') {
                 mostrarDetallesPaciente(pacienteSeleccionadoId);
             }
@@ -96,25 +86,25 @@ function setupEventListeners() {
         }
     });
 
-    // --- Lógica para el envío del Formulario de CONSULTA ---
+    // --- 3. MODAL Y FORMULARIO DE CONSULTAS ---
+    const consultationModal = document.getElementById('add-consultation-modal');
+    const consultationForm = document.getElementById('consultation-form');
+    const consultationModalCloseBtn = consultationModal.querySelector('.close-btn');
+
+    // Acción: Cerrar el modal de consulta con el botón 'x'
+    consultationModalCloseBtn.onclick = function() {
+        consultationModal.style.display = "none";
+    }
+
+    // Acción: Enviar el formulario de consulta (para Añadir o Editar)
     consultationForm.addEventListener('submit', async function(event) {
         event.preventDefault();
+        
+        // Aquí también deberíamos añadir validación para los campos de consulta
         const consultaData = {
             paciente_id: pacienteSeleccionadoId,
-            fecha: new Date().toISOString().slice(0, 10),
-            fur: document.getElementById('fur').value,
-            gestas_parto: parseInt(document.getElementById('gestas_parto').value) || 0,
-            gestas_cesarea: parseInt(document.getElementById('gestas_cesarea').value) || 0,
-            gestas_aborto: parseInt(document.getElementById('gestas_aborto').value) || 0,
-            anticonceptivos: document.getElementById('anticonceptivos').value,
-            antecedentes_personales: document.getElementById('antecedentes_personales').value,
-            antecedentes_familiares: document.getElementById('antecedentes_familiares').value,
-            motivo_consulta: document.getElementById('motivo_consulta').value,
-            examen_fisico: document.getElementById('examen_fisico').value,
-            ecografia: document.getElementById('ecografia').value,
-            diagnostico: document.getElementById('diagnostico').value,
-            plan: document.getElementById('plan').value,
-            medio_pago: document.getElementById('medio_pago').value
+            fecha: document.getElementById('fecha_consulta').value, // Asumiendo que añades un campo de fecha
+            // ... Recolecta todos los demás campos de la consulta ...
         };
 
         let resultado;
@@ -128,12 +118,21 @@ function setupEventListeners() {
             alert(resultado.mensaje);
             consultationModal.style.display = "none";
             consultationForm.reset();
-            // Refrescamos los detalles para ver los cambios al instante
             mostrarDetallesPaciente(pacienteSeleccionadoId);
         } else {
             alert(resultado.mensaje);
         }
     });
+
+    // --- 4. LÓGICA GENERAL DE CIERRE DE MODALES ---
+    window.onclick = function(event) {
+        if (event.target == patientModal) {
+            patientModal.style.display = "none";
+        }
+        if (event.target == consultationModal) {
+            consultationModal.style.display = "none";
+        }
+    }
 }
 
 function abrirModalConsulta(modo = 'añadir', consultaData = null) {

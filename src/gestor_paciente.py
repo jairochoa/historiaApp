@@ -52,6 +52,12 @@ def verificar_usuario(username, password):
 
 def agregar_paciente(cedula, nombres, apellidos, fecha_nacimiento, telefono, domicilio, comentario):
     """Añade un nuevo paciente a la base de datos."""
+    
+    # --- ¡NUEVO! Bloque de Validación Backend ---
+    if not cedula or not nombres or not apellidos:
+        print("Error de validación: Cédula, Nombres y Apellidos no pueden estar vacíos.")
+        return None # Devuelve None si los datos son inválidos
+    
     conn = obtener_conexion_db()
     cursor = conn.cursor()
     
@@ -190,12 +196,16 @@ def buscar_paciente_por_id(paciente_id):
     return paciente_dict, consultas_list
 
 
-# En src/gestor_pacientes.py
-
-# ... (debajo de las otras funciones de pacientes)
-
 def modificar_paciente(paciente_id, paciente_data):
     """Actualiza los datos de un paciente existente usando su ID interno."""
+    
+    # --- BLOQUE DE VALIDACIÓN CORREGIDO ---
+    # Usamos corchetes ['clave'] para acceder a los valores del diccionario.
+    if not paciente_data['cedula'] or not paciente_data['nombres'] or not paciente_data['apellidos']:
+        print("Error de validación: Cédula, Nombres y Apellidos no pueden estar vacíos.")
+        return False # Devolvemos False para indicar el fallo
+    # --- FIN DE LA CORRECCIÓN ---
+    
     conn = obtener_conexion_db()
     cursor = conn.cursor()
     
