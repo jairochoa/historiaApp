@@ -176,7 +176,7 @@ def obtener_todos_los_pacientes():
 
 # --- Funciones de Consultas ---
 
-def agregar_consulta(paciente_id, fecha, motivo, fur, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, ant_personales, ant_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago, ruta_imagen=None):
+def agregar_consulta(paciente_id, motivo, fur, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, ant_personales, ant_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago, ruta_imagen=None):
     """Añade una nueva consulta para un paciente existente."""
     conn = obtener_conexion_db()
     cursor = conn.cursor()
