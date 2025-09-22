@@ -95,6 +95,17 @@ def modificar_paciente(paciente_id, paciente_data):
     else:
         return {'exito': False, 'mensaje': 'Error: La cédula ya está registrada para otro paciente.'}
 
+@eel.expose('eliminar_paciente_py')
+def eliminar_paciente(paciente_id):
+    """Función intermediaria para eliminar un paciente desde JS."""
+    print(f"Recibiendo solicitud para eliminar paciente ID {paciente_id}")
+    exito = gestor.eliminar_paciente(paciente_id)
+    
+    if exito:
+        return {'exito': True, 'mensaje': 'Paciente eliminado correctamente.'}
+    else:
+        return {'exito': False, 'mensaje': 'Error al eliminar el paciente.'}
+
 
 if __name__ == "__main__":
     # Aquí podrías añadir la lógica de login en el futuro

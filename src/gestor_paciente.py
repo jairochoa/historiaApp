@@ -194,7 +194,33 @@ def modificar_paciente(paciente_id, paciente_data):
         return False
     finally:
         conn.close()
+
+
+def eliminar_paciente(paciente_id):
+    """
+    Elimina un paciente y todas sus consultas asociadas de la base de datos.
+    """
+    conn = obtener_conexion_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Primero, eliminamos los registros dependientes (las consultas)
+        cursor.execute("DELETE FROM consultas WHERE paciente_id = ?", (paciente_id,))
         
+        # Luego, eliminamos el registro principal (el paciente)
+        cursor.execute("DELETE FROM pacientes WHERE id = ?", (paciente_id,))
+        
+        conn.commit()
+        print(f"Paciente ID {paciente_id} y todas sus consultas han sido eliminados.")
+        return True
+    except Exception as e:
+        print(f"Error al eliminar el paciente: {e}")
+        conn.rollback() # Revierte los cambios si algo sale mal
+        return False
+    finally:
+        conn.close()
+        
+    
 # if __name__ == '__main__':
 #     # --- PRUEBAS ---
 #     print("\n--- INICIANDO PRUEBAS DEL GESTOR ---")

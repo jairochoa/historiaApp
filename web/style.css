@@ -154,3 +154,13 @@ main {
 .consultation-header h4 {
     margin: 0;
 }
+
+/* En web/style.css */
+
+.btn-danger {
+    background-color: #dc3545; /* Un color rojo */
+}
+
+.btn-danger:hover {
+    background-color: #c82333; /* Un rojo más oscuro */
+}

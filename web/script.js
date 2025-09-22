@@ -162,7 +162,7 @@ async function mostrarDetallesPaciente(pacienteId) {
     
     // Si por alguna razón el paciente no se encuentra, muestra un mensaje y termina.
     if (!data.paciente) {
-        detailsContainer.innerHTML = '<p>Error: No se encontraron los datos del paciente.</p>';
+        detailsContainer.innerHTML = '<p>Selecciona un paciente de la lista para ver sus detalles.</p>';
         return;
     }
 
@@ -170,7 +170,10 @@ async function mostrarDetallesPaciente(pacienteId) {
     let html = `
         <div class="details-header">
             <h3>${data.paciente.nombres} ${data.paciente.apellidos}</h3>
-            <button id="edit-patient-btn" class="btn-secondary">Editar Paciente</button>
+            <div>
+                <button id="edit-patient-btn" class="btn-secondary">Editar</button>
+                <button id="delete-patient-btn" class="btn btn-danger">Eliminar</button>
+            </div>
         </div>
         <p><strong>Cédula:</strong> ${data.paciente.cedula}</p>
         <p><strong>Teléfono:</strong> ${data.paciente.telefono}</p>
@@ -226,6 +229,29 @@ async function mostrarDetallesPaciente(pacienteId) {
         patientModal.style.display = 'block';
     });
 
-    // 2. Botón "Añadir Consulta" (Forma corregida y simple)
+    // 2. Botón "Añadir Consulta"
     document.getElementById('add-consultation-btn').addEventListener('click', abrirModalConsulta);
+
+    // 3. ¡NUEVO! Botón "Eliminar Paciente"
+    document.getElementById('delete-patient-btn').addEventListener('click', async () => {
+        // Mostramos una ventana de confirmación nativa del navegador
+        const confirmacion = confirm(
+            `¿Estás segura de que deseas eliminar a ${data.paciente.nombres} ${data.paciente.apellidos}?\n\nEsta acción es irreversible y borrará todo su historial.`
+        );
+
+        if (confirmacion) {
+            console.log(`Enviando solicitud para eliminar paciente ID: ${pacienteId}`);
+            const resultado = await eel.eliminar_paciente_py(pacienteId)();
+            alert(resultado.mensaje);
+
+            if (resultado.exito) {
+                // Si se borró, limpiamos la vista de detalles y refrescamos la lista
+                detailsContainer.innerHTML = '<p>Selecciona un paciente de la lista para ver sus detalles.</p>';
+                cargarListaPacientes();
+            }
+        } else {
+            console.log("El usuario canceló la eliminación.");
+        }
+    });
+
 }
