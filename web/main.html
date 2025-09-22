@@ -11,6 +11,7 @@
     <div class="container">
         <header>
             <h1>Gestor de Pacientes</h1>
+            <button id="add-patient-btn" class="btn">Nuevo Paciente</button>
             <div class="search-container">
                 <input type="text" id="search-bar" placeholder="Buscar por cédula o nombre...">
             </div>
@@ -30,6 +31,21 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <div id="add-patient-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Registrar Nuevo Paciente</h2>
+            <form id="patient-form">
+                <input type="text" id="cedula" name="cedula" placeholder="Cédula de Identidad" required>
+                <input type="text" id="nombres" name="nombres" placeholder="Nombres" required>
+                <input type="text" id="apellidos" name="apellidos" placeholder="Apellidos" required>
+                <input type="date" id="fecha_nacimiento" name="fecha_nacimiento">
+                <input type="tel" id="telefono" name="telefono" placeholder="Teléfono">
+                <button type="submit" class="btn">Guardar Paciente</button>
+            </form>
+        </div>
     </div>
 
     <script src="script.js"></script>

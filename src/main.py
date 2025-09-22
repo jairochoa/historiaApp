@@ -35,6 +35,28 @@ def iniciar_app():
     eel.start('main.html', size=(1024, 768), port=0) # port=0 busca un puerto libre
     print("Aplicación cerrada.")
 
+@eel.expose('agregar_paciente_py')
+def agregar_paciente(paciente_data):
+    """
+    Función intermediaria que recibe un diccionario con los datos del paciente
+    desde JavaScript y llama al gestor para guardarlo.
+    """
+    print("Recibiendo datos para un nuevo paciente:", paciente_data)
+    # Llama a la función del gestor con los datos del diccionario
+    nuevo_id = gestor.agregar_paciente(
+        cedula=paciente_data['cedula'],
+        nombres=paciente_data['nombres'],
+        apellidos=paciente_data['apellidos'],
+        fecha_nacimiento=paciente_data['fecha_nacimiento'],
+        telefono=paciente_data['telefono']
+    )
+    # Devolvemos un diccionario indicando si fue exitoso
+    if nuevo_id:
+        return {'exito': True, 'mensaje': 'Paciente agregado correctamente.'}
+    else:
+        return {'exito': False, 'mensaje': 'Error: La cédula ya está registrada.'}
+
+
 if __name__ == "__main__":
     # Aquí podrías añadir la lógica de login en el futuro
     iniciar_app()
