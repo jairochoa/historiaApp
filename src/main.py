@@ -49,8 +49,8 @@ def agregar_paciente(paciente_data):
         apellidos=paciente_data['apellidos'],
         fecha_nacimiento=paciente_data['fecha_nacimiento'],
         telefono=paciente_data['telefono'],
-        comentario=paciente_data['comentario'],
-        domicilio=paciente_data['domicilio']
+        domicilio=paciente_data['domicilio'],
+        comentario=paciente_data['comentario']
         
     )
     # Devolvemos un diccionario indicando si fue exitoso
