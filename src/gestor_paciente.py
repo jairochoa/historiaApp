@@ -1,6 +1,7 @@
 import sqlite3
 import hashlib # Librería para encriptar contraseñas
 from database import obtener_conexion_db
+from datetime import datetime, date
 
 # --- Funciones de Usuarios y Seguridad ---
 
@@ -57,6 +58,29 @@ def agregar_paciente(cedula, nombres, apellidos, fecha_nacimiento, telefono, dom
     if not cedula or not nombres or not apellidos:
         print("Error de validación: Cédula, Nombres y Apellidos no pueden estar vacíos.")
         return None # Devuelve None si los datos son inválidos
+    
+    # --- ¡NUEVO! VALIDACIÓN DE FECHA DE NACIMIENTO EN BACKEND ---
+    if fecha_nacimiento: # Solo si la fecha no está vacía
+        try:
+            fecha_nac_obj = date.fromisoformat(fecha_nacimiento)
+            hoy = date.today()
+            
+            if fecha_nac_obj > hoy:
+                print("Error de validación: La fecha de nacimiento no puede ser futura.")
+                return None
+            
+            if fecha_nac_obj.year < (hoy.year - 120):
+                print("Error de validación: La fecha de nacimiento es demasiado antigua.")
+                return None
+        except ValueError:
+            print(f"Error: El formato de fecha '{fecha_nacimiento}' es inválido.")
+            return None
+    # --- FIN DE LA VALIDACIÓN DE FECHA ---
+    
+    
+    
+    
+    
     
     conn = obtener_conexion_db()
     cursor = conn.cursor()
@@ -157,11 +181,13 @@ def agregar_consulta(paciente_id, fecha, motivo, fur, gestas_parto, gestas_cesar
     conn = obtener_conexion_db()
     cursor = conn.cursor()
     
+    fecha_actual = datetime.now().strftime("%Y-%m-%d")
+    
     try:
         cursor.execute(
-            """INSERT INTO consultas (paciente_id, fecha, motivo_consulta, ruta_imagen, FUR, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, antecedentes_personales, antecedentes_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago)
+            """INSERT INTO consultas (paciente_id, fecha, motivo_consulta, ruta_imagen, fur, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, antecedentes_personales, antecedentes_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (paciente_id, fecha, motivo, ruta_imagen, fur, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, ant_personales, ant_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago)
+            (paciente_id, fecha_actual, motivo, ruta_imagen, fur, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, ant_personales, ant_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago)
         )
         conn.commit()
         print(f"Nueva consulta para el paciente ID {paciente_id} agregada exitosamente.")
@@ -205,6 +231,24 @@ def modificar_paciente(paciente_id, paciente_data):
         print("Error de validación: Cédula, Nombres y Apellidos no pueden estar vacíos.")
         return False # Devolvemos False para indicar el fallo
     # --- FIN DE LA CORRECCIÓN ---
+    
+    # --- ¡NUEVO! VALIDACIÓN DE FECHA DE NACIMIENTO EN BACKEND ---
+    if paciente_data['fecha_nacimiento']: # Solo si la fecha no está vacía
+        try:
+            fecha_nac_obj = date.fromisoformat(paciente_data['fecha_nacimiento'])
+            hoy = date.today()
+            
+            if fecha_nac_obj > hoy:
+                print("Error de validación: La fecha de nacimiento no puede ser futura.")
+                return None
+            
+            if fecha_nac_obj.year < (hoy.year - 120):
+                print("Error de validación: La fecha de nacimiento es demasiado antigua.")
+                return None
+        except ValueError:
+            print(f"Error: El formato de fecha '{paciente_data['fecha_nacimiento']}' es inválido.")
+            return None
+    # --- FIN DE LA VALIDACIÓN DE FECHA ---
     
     conn = obtener_conexion_db()
     cursor = conn.cursor()
@@ -357,13 +401,13 @@ def modificar_consulta(consulta_id, consulta_data):
         # Preparamos la sentencia UPDATE con todos los campos del formulario
         cursor.execute(
             """UPDATE consultas SET
-               fecha = ?, motivo_consulta = ?, fur = ?, gestas_parto = ?, gestas_cesarea = ?,
+               motivo_consulta = ?, fur = ?, gestas_parto = ?, gestas_cesarea = ?,
                gestas_aborto = ?, anticonceptivos = ?, antecedentes_personales = ?,
                antecedentes_familiares = ?, examen_fisico = ?, ecografia = ?,
                diagnostico = ?, plan = ?, medio_pago = ?
                WHERE id = ?""",
             (
-                consulta_data['fecha'], consulta_data['motivo_consulta'], consulta_data['fur'],
+                consulta_data['motivo_consulta'], consulta_data['fur'],
                 consulta_data['gestas_parto'], consulta_data['gestas_cesarea'],
                 consulta_data['gestas_aborto'], consulta_data['anticonceptivos'],
                 consulta_data['antecedentes_personales'], consulta_data['antecedentes_familiares'],

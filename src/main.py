@@ -86,7 +86,6 @@ def agregar_consulta(consulta_data):
     print("Recibiendo datos para una nueva consulta:", consulta_data)
     nuevo_id = gestor.agregar_consulta(
         paciente_id=consulta_data['paciente_id'],
-        fecha=consulta_data['fecha'],
         fur=consulta_data['fur'],
         gestas_parto=consulta_data['gestas_parto'],
         gestas_cesarea=consulta_data['gestas_cesarea'],

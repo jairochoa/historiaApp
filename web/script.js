@@ -35,33 +35,52 @@ function setupEventListeners() {
         patientModal.querySelector('h2').textContent = 'Registrar Nuevo Paciente';
         patientModal.querySelector('button[type="submit"]').textContent = 'Guardar Paciente';
         patientModal.style.display = "block";
-    }
+    };
 
     // Acción: Cerrar el modal de paciente con el botón 'x'
     patientModalCloseBtn.onclick = function() {
         patientModal.style.display = "none";
-    }
+    };
     
     // Acción: Enviar el formulario de paciente (para Añadir o Editar)
     patientForm.addEventListener('submit', async function(event) {
         event.preventDefault();
 
-        // --- VALIDACIÓN FRONTEND AÑADIDA ---
+        // VALIDACIÓN FRONTEND
         const cedula = document.getElementById('cedula').value.trim();
         const nombres = document.getElementById('nombres').value.trim();
         const apellidos = document.getElementById('apellidos').value.trim();
 
-        if (cedula === '' || nombres === '' || apellidos === '') {
+        if (!cedula || !nombres || !apellidos) {
             alert("Por favor, completa todos los campos obligatorios (Cédula, Nombres, Apellidos).");
-            return; // Detiene el envío si la validación falla
+            return;
         }
-        // --- FIN DE LA VALIDACIÓN ---
+        
+        // VALIDACIÓN DE FECHA DE NACIMIENTO
+        const fechaNacimientoStr = document.getElementById('fecha_nacimiento').value;
+        if (fechaNacimientoStr) {
+            const fechaNacimiento = new Date(fechaNacimientoStr);
+            const hoy = new Date();
+            const anioMinimo = hoy.getFullYear() - 120;
+
+            fechaNacimiento.setUTCHours(0, 0, 0, 0);
+            hoy.setUTCHours(0, 0, 0, 0);
+
+            if (fechaNacimiento > hoy) {
+                alert("Error: La fecha de nacimiento no puede ser en el futuro.");
+                return;
+            }
+            if (fechaNacimiento.getFullYear() < anioMinimo) {
+                alert("Error: La edad del paciente parece irreal. Por favor, verifica la fecha de nacimiento.");
+                return;
+            }
+        }
 
         const pacienteData = {
             cedula: cedula,
             nombres: nombres,
             apellidos: apellidos,
-            fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
+            fecha_nacimiento: fechaNacimientoStr,
             telefono: document.getElementById('telefono').value,
             domicilio: document.getElementById('domicilio').value,
             comentario: document.getElementById('comentario').value
@@ -91,20 +110,54 @@ function setupEventListeners() {
     const consultationForm = document.getElementById('consultation-form');
     const consultationModalCloseBtn = consultationModal.querySelector('.close-btn');
 
-    // Acción: Cerrar el modal de consulta con el botón 'x'
     consultationModalCloseBtn.onclick = function() {
         consultationModal.style.display = "none";
-    }
+    };
 
-    // Acción: Enviar el formulario de consulta (para Añadir o Editar)
     consultationForm.addEventListener('submit', async function(event) {
         event.preventDefault();
         
-        // Aquí también deberíamos añadir validación para los campos de consulta
+        // VALIDACIÓN DE CONSULTA
+        const furStr = document.getElementById('fur').value; // Usamos un nombre consistente
+        const motivo = document.getElementById('motivo_consulta').value.trim();
+
+        if (!furStr || !motivo) {
+            alert("Error: Los campos FUR y Motivo de Consulta son obligatorios.");
+            return;
+        }
+
+        const fechaFur = new Date(furStr);
+        const hoy = new Date();
+        const anioMinimo = hoy.getFullYear() - 3;
+
+        fechaFur.setUTCHours(0, 0, 0, 0);
+        hoy.setUTCHours(0, 0, 0, 0);
+
+        if (fechaFur > hoy) {
+            alert("Error: La fecha FUR no puede ser en el futuro.");
+            return;
+        }
+        if (fechaFur.getFullYear() < anioMinimo) {
+            alert("Error: La fecha FUR es demasiado antigua. Por favor, verifícala.");
+            return;
+        }
+
+        // --- RECOLECCIÓN DE DATOS CORREGIDA ---
         const consultaData = {
             paciente_id: pacienteSeleccionadoId,
-            fecha: document.getElementById('fecha_consulta').value, // Asumiendo que añades un campo de fecha
-            // ... Recolecta todos los demás campos de la consulta ...
+            fur: furStr, // Usamos la variable validada
+            gestas_parto: parseInt(document.getElementById('gestas_parto').value) || 0,
+            gestas_cesarea: parseInt(document.getElementById('gestas_cesarea').value) || 0,
+            gestas_aborto: parseInt(document.getElementById('gestas_aborto').value) || 0,
+            anticonceptivos: document.getElementById('anticonceptivos').value,
+            antecedentes_personales: document.getElementById('antecedentes_personales').value,
+            antecedentes_familiares: document.getElementById('antecedentes_familiares').value,
+            motivo_consulta: motivo,
+            examen_fisico: document.getElementById('examen_fisico').value,
+            ecografia: document.getElementById('ecografia').value,
+            diagnostico: document.getElementById('diagnostico').value,
+            plan: document.getElementById('plan').value,
+            medio_pago: document.getElementById('medio_pago').value
         };
 
         let resultado;
@@ -132,7 +185,7 @@ function setupEventListeners() {
         if (event.target == consultationModal) {
             consultationModal.style.display = "none";
         }
-    }
+    };
 }
 
 function abrirModalConsulta(modo = 'añadir', consultaData = null) {
@@ -341,4 +394,22 @@ function renderizarListaPacientes(listaDePacientes) {
         
         patientListElement.appendChild(listItem);
     });
+}
+
+
+// En web/script.js
+
+window.onload = function() {
+    setupEventListeners();
+    cargarListaPacientes();
+    configurarLimitesDeFechas(); // <-- Llama a la nueva función
+};
+
+// --- ¡NUEVA FUNCIÓN! ---
+function configurarLimitesDeFechas() {
+    const hoy = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    
+    // Establece la fecha máxima para la fecha de nacimiento y FUR como hoy
+    document.getElementById('fecha_nacimiento').max = hoy;
+    document.getElementById('fur').max = hoy; // Asumiendo que el ID es 'fur'
 }
