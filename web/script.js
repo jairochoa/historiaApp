@@ -77,15 +77,33 @@ async function cargarListaPacientes() {
     console.log("Lista de pacientes cargada.");
 }
 
+let pacienteSeleccionadoId = null;
+
 async function mostrarDetallesPaciente(pacienteId) {
+    pacienteSeleccionadoId = pacienteId; // Guardamos el ID del paciente actual
     console.log(`Pidiendo detalles para el paciente ID: ${pacienteId}`);
+    
     const data = await eel.buscar_paciente_por_id_py(pacienteId)();
     const detailsContainer = document.getElementById('patient-details');
+    
     if (!data.paciente) {
         detailsContainer.innerHTML = '<p>Error: No se encontraron los datos del paciente.</p>';
         return;
     }
-    let html = `<h3>${data.paciente.nombres} ${data.paciente.apellidos}</h3><p><strong>Cédula:</strong> ${data.paciente.cedula}</p><p><strong>Teléfono:</strong> ${data.paciente.telefono}</p><p><strong>Fecha de Nacimiento:</strong> ${data.paciente.fecha_nacimiento}</p><hr><h4>Historial de Consultas</h4>`;
+
+    // Construimos el HTML con los detalles del paciente
+    let html = `
+        <h3>${data.paciente.nombres} ${data.paciente.apellidos}</h3>
+        <p><strong>Cédula:</strong> ${data.paciente.cedula}</p>
+        <p><strong>Teléfono:</strong> ${data.paciente.telefono}</p>
+        <p><strong>Comentario:</strong> ${data.paciente.comentario || '<em>Sin comentario.</em>'}</p>
+        <hr>
+        <div class="consultation-header">
+            <h4>Historial de Consultas</h4>
+            <button id="add-consultation-btn" class="btn">Añadir Consulta</button>
+        </div>
+    `;
+
     if (data.consultas.length > 0) {
         html += '<ul>';
         data.consultas.forEach(consulta => {
@@ -96,4 +114,8 @@ async function mostrarDetallesPaciente(pacienteId) {
         html += '<p>No hay consultas registradas para este paciente.</p>';
     }
     detailsContainer.innerHTML = html;
+    
+    document.getElementById('add-consultation-btn').addEventListener('click', () => {
+        abrirModalConsulta();
+    });
 }
