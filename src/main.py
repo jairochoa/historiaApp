@@ -4,6 +4,27 @@ import gestor_paciente as gestor # Importamos nuestro módulo de lógica
 # Inicializa Eel y le dice dónde están los archivos de la interfaz ('web')
 eel.init('web')
 
+# Simula una sesión para saber quién está logueado.
+sesion_actual = {'usuario': None, 'rol': None}
+
+# --- Funciones de Login Expuestas ---
+
+@eel.expose('login_py')
+def login(username, password):
+    """Verifica las credenciales y actualiza la sesión."""
+    usuario_verificado = gestor.verificar_usuario(username, password)
+    if usuario_verificado:
+        sesion_actual['usuario'] = usuario_verificado['username']
+        sesion_actual['rol'] = usuario_verificado['rol']
+        # Le decimos a JS que el login fue exitoso para que redirija
+        eel.redirigir_a_main()
+        return {'exito': True}
+    else:
+        return {'exito': False, 'mensaje': 'Usuario o contraseña incorrectos.'}
+
+
+
+
 # --- El Controlador ---
 # Usamos el decorador @eel.expose para que esta función pueda ser llamada desde JavaScript.
 # Le damos un nombre para JS ('obtener_pacientes_py') para evitar confusiones.
@@ -108,6 +129,14 @@ def eliminar_paciente(paciente_id):
     else:
         return {'exito': False, 'mensaje': 'Error al eliminar el paciente.'}
 
+def iniciar_app():
+    """
+    Modificamos la función para que inicie en la pantalla de login.
+    """
+    print("Iniciando aplicación en la pantalla de login...")
+    # La aplicación ahora empieza en login.html
+    eel.start('login.html', size=(600, 500), port=0)
+    print("Aplicación cerrada.")
 
 if __name__ == "__main__":
     # Aquí podrías añadir la lógica de login en el futuro

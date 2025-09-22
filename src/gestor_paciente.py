@@ -25,23 +25,28 @@ def registrar_usuario(username, password):
         conn.close()
 
 def verificar_usuario(username, password):
-    """Verifica si el username y la contraseña son correctos."""
+    """
+    Verifica las credenciales. Si son correctas, devuelve los datos del usuario.
+    Si no, devuelve None.
+    """
     conn = obtener_conexion_db()
+    conn.row_factory = sqlite3.Row # Para obtener resultados como diccionario
     cursor = conn.cursor()
     
-    cursor.execute("SELECT password_hash FROM usuarios WHERE username = ?", (username,))
+    # Seleccionamos toda la fila del usuario
+    cursor.execute("SELECT * FROM usuarios WHERE username = ?", (username,))
     record = cursor.fetchone()
     conn.close()
     
     if record:
-        stored_hash = record[0]
+        stored_hash = record['password_hash']
         input_hash = _hash_password(password)
         if stored_hash == input_hash:
-            print("Login exitoso.")
-            return True
+            print(f"Login exitoso para usuario '{username}' con rol '{record['rol']}'.")
+            return dict(record) # Devuelve un diccionario con id, username, rol, etc.
     
-    print("Login fallido: usuario o contraseña incorrectos.")
-    return False
+    print("Login fallido.")
+    return None
 
 # --- Funciones de Pacientes ---
 
@@ -257,9 +262,8 @@ def crear_copia_de_seguridad_automatica():
         # Si el backup falla, no debe detener la aplicación. Solo lo registramos.
         print(f"ERROR DURANTE EL BACKUP AUTOMÁTICO: {e}")
 
-
-    
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    registrar_usuario("ydama", "linfocitot") #<-- ¡Sin el # al principio!
 #     # --- PRUEBAS ---
 #     print("\n--- INICIANDO PRUEBAS DEL GESTOR ---")
     
