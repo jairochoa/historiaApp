@@ -185,3 +185,31 @@ main {
     color: #dc3545;
     margin-top: 15px;
 }
+
+/* Al final de web/style.css */
+
+.consultation-list li {
+    position: relative; /* Necesario para posicionar el botón de eliminar */
+    padding-right: 40px; /* Hacemos espacio para el botón */
+}
+
+.delete-consultation-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%; /* Lo hacemos redondo */
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-weight: bold;
+    line-height: 24px; /* Centra el texto verticalmente */
+    text-align: center;
+}
+
+.delete-consultation-btn:hover {
+    background-color: #c82333;
+}

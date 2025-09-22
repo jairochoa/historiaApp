@@ -298,6 +298,30 @@ def crear_copia_de_seguridad_automatica():
         # Si el backup falla, no debe detener la aplicación. Solo lo registramos.
         print(f"ERROR DURANTE EL BACKUP AUTOMÁTICO: {e}")
 
+def eliminar_consulta(consulta_id):
+    """Elimina una única consulta de la base de datos usando su ID."""
+    conn = obtener_conexion_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("DELETE FROM consultas WHERE id = ?", (consulta_id,))
+        conn.commit()
+        
+        # rowcount nos dice cuántas filas fueron afectadas. Si es 1, fue un éxito.
+        if cursor.rowcount > 0:
+            print(f"Consulta ID {consulta_id} eliminada exitosamente.")
+            return True
+        else:
+            print(f"No se encontró ninguna consulta con el ID {consulta_id} para eliminar.")
+            return False
+            
+    except Exception as e:
+        print(f"Error al eliminar la consulta: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
 #if __name__ == '__main__':
     #registrar_usuario("ydama", "linfocitot") #<-- ¡Sin el # al principio!
 #     # --- PRUEBAS ---

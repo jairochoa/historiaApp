@@ -160,7 +160,7 @@ async function mostrarDetallesPaciente(pacienteId) {
     }
 
     // Construye el bloque de HTML para los detalles del paciente.
-    let html = `
+        let html = `
         <div class="details-header">
             <h3>${data.paciente.nombres} ${data.paciente.apellidos}</h3>
             <div>
@@ -179,16 +179,16 @@ async function mostrarDetallesPaciente(pacienteId) {
         </div>
     `;
 
-    // Construye la lista de consultas si existen.
     if (data.consultas.length > 0) {
         html += '<ul class="consultation-list">';
         data.consultas.forEach(consulta => {
-            // Aquí puedes añadir más detalles de la consulta si quieres
+            // --- ¡NUEVO! Añadimos el botón de eliminar a cada consulta ---
             html += `
                 <li>
                     <strong>Fecha: ${consulta.fecha}</strong><br>
                     <strong>Motivo:</strong> ${consulta.motivo_consulta || 'N/A'}<br>
                     <strong>Diagnóstico:</strong> ${consulta.diagnostico || 'N/A'}
+                    <button class="delete-consultation-btn" data-consulta-id="${consulta.id}">&times;</button>
                 </li>
             `;
         });
@@ -247,6 +247,24 @@ async function mostrarDetallesPaciente(pacienteId) {
         }
     });
 
+    document.querySelectorAll('.delete-consultation-btn').forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const consultaId = event.target.dataset.consultaId;
+            
+            const confirmacion = confirm("¿Estás segura de que deseas eliminar esta entrada del historial?");
+            
+            if (confirmacion) {
+                console.log(`Enviando solicitud para eliminar consulta ID: ${consultaId}`);
+                const resultado = await eel.eliminar_consulta_py(consultaId)();
+                alert(resultado.mensaje);
+
+                if (resultado.exito) {
+                    // Si se borró, simplemente refrescamos la vista de detalles
+                    mostrarDetallesPaciente(pacienteId);
+                }
+            }
+        });
+    });
 }
 
 async function filtrarListaPacientes(termino) {

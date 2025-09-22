@@ -145,6 +145,18 @@ def buscar_pacientes(termino):
     else:
         return gestor.buscar_pacientes_por_termino(termino)
 
+@eel.expose('eliminar_consulta_py')
+def eliminar_consulta(consulta_id):
+    """Función intermediaria para eliminar una consulta desde JS."""
+    print(f"Recibiendo solicitud para eliminar consulta ID {consulta_id}")
+    exito = gestor.eliminar_consulta(consulta_id)
+    
+    if exito:
+        return {'exito': True, 'mensaje': 'Consulta eliminada correctamente.'}
+    else:
+        return {'exito': False, 'mensaje': 'Error al eliminar la consulta.'}
+
+
 if __name__ == "__main__":
     # Aquí podrías añadir la lógica de login en el futuro
     iniciar_app()
