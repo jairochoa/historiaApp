@@ -157,6 +157,23 @@ def eliminar_consulta(consulta_id):
         return {'exito': False, 'mensaje': 'Error al eliminar la consulta.'}
 
 
+@eel.expose('buscar_consulta_py')
+def buscar_consulta(consulta_id):
+    """Busca una consulta específica por su ID."""
+    return gestor.buscar_consulta_por_id(consulta_id)
+
+@eel.expose('modificar_consulta_py')
+def modificar_consulta(consulta_id, consulta_data):
+    """Modifica una consulta existente."""
+    exito = gestor.modificar_consulta(consulta_id, consulta_data)
+    if exito:
+        return {'exito': True, 'mensaje': 'Consulta actualizada correctamente.'}
+    else:
+        return {'exito': False, 'mensaje': 'Error al actualizar la consulta.'}
+
+
+
+
 if __name__ == "__main__":
     # Aquí podrías añadir la lógica de login en el futuro
     iniciar_app()

@@ -3,6 +3,9 @@
 // Se declara UNA SOLA VEZ aquí, en el ámbito global.
 let pacienteSeleccionadoId = null;
 let modoFormularioPaciente = 'añadir';
+let modoFormularioConsulta = 'añadir';
+let consultaSeleccionadaId = null;
+
 
 window.onload = function() {
     setupEventListeners();
@@ -114,12 +117,18 @@ function setupEventListeners() {
             medio_pago: document.getElementById('medio_pago').value
         };
 
-        const resultado = await eel.agregar_consulta_py(consultaData)();
+        let resultado;
+        if (modoFormularioConsulta === 'editar') {
+            resultado = await eel.modificar_consulta_py(consultaSeleccionadaId, consultaData)();
+        } else {
+            resultado = await eel.agregar_consulta_py(consultaData)();
+        }
 
         if (resultado.exito) {
             alert(resultado.mensaje);
             consultationModal.style.display = "none";
             consultationForm.reset();
+            // Refrescamos los detalles para ver los cambios al instante
             mostrarDetallesPaciente(pacienteSeleccionadoId);
         } else {
             alert(resultado.mensaje);
@@ -127,12 +136,28 @@ function setupEventListeners() {
     });
 }
 
-function abrirModalConsulta() {
-    if (!pacienteSeleccionadoId) {
-        alert("Por favor, selecciona un paciente primero.");
-        return;
-    }
+function abrirModalConsulta(modo = 'añadir', consultaData = null) {
     const modal = document.getElementById('add-consultation-modal');
+    const form = document.getElementById('consultation-form');
+    
+    modoFormularioConsulta = modo;
+    
+    if (modo === 'editar') {
+        consultaSeleccionadaId = consultaData.id;
+        modal.querySelector('h2').textContent = 'Editar Consulta';
+        // Rellenamos el formulario con los datos de la consulta
+        Object.keys(consultaData).forEach(key => {
+            const input = form.querySelector(`#${key}`);
+            if (input) {
+                input.value = consultaData[key];
+            }
+        });
+    } else {
+        consultaSeleccionadaId = null;
+        modal.querySelector('h2').textContent = 'Añadir Nueva Consulta';
+        form.reset();
+    }
+    
     modal.style.display = 'block';
 }
 
@@ -182,13 +207,18 @@ async function mostrarDetallesPaciente(pacienteId) {
     if (data.consultas.length > 0) {
         html += '<ul class="consultation-list">';
         data.consultas.forEach(consulta => {
-            // --- ¡NUEVO! Añadimos el botón de eliminar a cada consulta ---
+            // Añadimos los botones de Editar y Eliminar a cada consulta
             html += `
                 <li>
-                    <strong>Fecha: ${consulta.fecha}</strong><br>
-                    <strong>Motivo:</strong> ${consulta.motivo_consulta || 'N/A'}<br>
-                    <strong>Diagnóstico:</strong> ${consulta.diagnostico || 'N/A'}
-                    <button class="delete-consultation-btn" data-consulta-id="${consulta.id}">&times;</button>
+                    <div>
+                        <strong>Fecha: ${consulta.fecha}</strong><br>
+                        <strong>Motivo:</strong> ${consulta.motivo_consulta || 'N/A'}<br>
+                        <strong>Diagnóstico:</strong> ${consulta.diagnostico || 'N/A'}
+                    </div>
+                    <div>
+                        <button class="edit-consultation-btn" data-consulta-id="${consulta.id}">✏️</button>
+                        <button class="delete-consultation-btn" data-consulta-id="${consulta.id}">&times;</button>
+                    </div>
                 </li>
             `;
         });
@@ -246,6 +276,17 @@ async function mostrarDetallesPaciente(pacienteId) {
             console.log("El usuario canceló la eliminación.");
         }
     });
+
+    document.querySelectorAll('.edit-consultation-btn').forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const consultaId = event.target.dataset.consultaId;
+            const consultaData = await eel.buscar_consulta_py(consultaId)();
+            if (consultaData) {
+                abrirModalConsulta('editar', consultaData);
+            }
+        });
+    });
+
 
     document.querySelectorAll('.delete-consultation-btn').forEach(button => {
         button.addEventListener('click', async (event) => {

@@ -322,6 +322,64 @@ def eliminar_consulta(consulta_id):
     finally:
         conn.close()
 
+
+# En src/gestor_pacientes.py
+
+# ... (debajo de las otras funciones de consultas)
+
+def buscar_consulta_por_id(consulta_id):
+    """Busca y devuelve los datos de una única consulta por su ID."""
+    conn = obtener_conexion_db()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM consultas WHERE id = ?", (consulta_id,))
+    consulta_record = cursor.fetchone()
+    conn.close()
+    if consulta_record:
+        return dict(consulta_record)
+    return None
+
+def modificar_consulta(consulta_id, consulta_data):
+    """Actualiza los datos de una consulta existente."""
+    conn = obtener_conexion_db()
+    cursor = conn.cursor()
+    try:
+        # Preparamos la sentencia UPDATE con todos los campos del formulario
+        cursor.execute(
+            """UPDATE consultas SET
+               fecha = ?, motivo_consulta = ?, fur = ?, gestas_parto = ?, gestas_cesarea = ?,
+               gestas_aborto = ?, anticonceptivos = ?, antecedentes_personales = ?,
+               antecedentes_familiares = ?, examen_fisico = ?, ecografia = ?,
+               diagnostico = ?, plan = ?, medio_pago = ?
+               WHERE id = ?""",
+            (
+                consulta_data['fecha'], consulta_data['motivo_consulta'], consulta_data['fur'],
+                consulta_data['gestas_parto'], consulta_data['gestas_cesarea'],
+                consulta_data['gestas_aborto'], consulta_data['anticonceptivos'],
+                consulta_data['antecedentes_personales'], consulta_data['antecedentes_familiares'],
+                consulta_data['examen_fisico'], consulta_data['ecografia'],
+                consulta_data['diagnostico'], consulta_data['plan'],
+                consulta_data['medio_pago'], consulta_id
+            )
+        )
+        conn.commit()
+        print(f"Consulta ID {consulta_id} actualizada exitosamente.")
+        return True
+    except Exception as e:
+        print(f"Error al modificar la consulta: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+
+
+
+
+
+
+
+
 #if __name__ == '__main__':
     #registrar_usuario("ydama", "linfocitot") #<-- ¡Sin el # al principio!
 #     # --- PRUEBAS ---

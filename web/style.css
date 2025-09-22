@@ -213,3 +213,19 @@ main {
 .delete-consultation-btn:hover {
     background-color: #c82333;
 }
+
+/* Al final de web/style.css */
+
+.edit-consultation-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: #007bff;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.edit-consultation-btn:hover {
+    color: #0056b3;
+}
