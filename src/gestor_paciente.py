@@ -96,6 +96,42 @@ def buscar_paciente_por_cedula(cedula):
     conn.close()
     return paciente_dict, consultas_list
 
+
+# En src/gestor_pacientes.py
+
+# ... (debajo de las otras funciones de pacientes)
+
+def buscar_pacientes_por_termino(termino):
+    """
+    Busca pacientes cuyo nombre, apellido o cédula contenga el término de búsqueda.
+    La búsqueda no distingue entre mayúsculas y minúsculas.
+    """
+    conn = obtener_conexion_db()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    # El término de búsqueda se formatea con '%' para que funcione como un "contiene".
+    # ej. si termino es "ana", buscará "%ana%"
+    termino_busqueda = f"%{termino}%"
+    
+    # La cláusula LIKE es la que permite buscar texto parcial.
+    # La función UPPER() hace que la búsqueda no sea sensible a mayúsculas/minúsculas.
+    cursor.execute(
+        """SELECT id, cedula, nombres, apellidos FROM pacientes
+           WHERE UPPER(nombres) LIKE UPPER(?) OR 
+                 UPPER(apellidos) LIKE UPPER(?) OR 
+                 UPPER(cedula) LIKE UPPER(?)
+           ORDER BY apellidos, nombres""",
+        (termino_busqueda, termino_busqueda, termino_busqueda)
+    )
+    
+    pacientes_records = cursor.fetchall()
+    conn.close()
+    
+    return [dict(paciente) for paciente in pacientes_records]
+
+
+
 def obtener_todos_los_pacientes():
     """Devuelve una lista de todos los pacientes registrados."""
     conn = obtener_conexion_db()
@@ -262,8 +298,8 @@ def crear_copia_de_seguridad_automatica():
         # Si el backup falla, no debe detener la aplicación. Solo lo registramos.
         print(f"ERROR DURANTE EL BACKUP AUTOMÁTICO: {e}")
 
-if __name__ == '__main__':
-    registrar_usuario("ydama", "linfocitot") #<-- ¡Sin el # al principio!
+#if __name__ == '__main__':
+    #registrar_usuario("ydama", "linfocitot") #<-- ¡Sin el # al principio!
 #     # --- PRUEBAS ---
 #     print("\n--- INICIANDO PRUEBAS DEL GESTOR ---")
     

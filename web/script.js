@@ -18,6 +18,13 @@ function setupEventListeners() {
     const patientModalCloseBtn = patientModal.querySelector('.close-btn');
     const patientForm = document.getElementById('patient-form'); // Declarado una sola vez aquí
 
+    const searchBar = document.getElementById('search-bar');
+    searchBar.addEventListener('keyup', () => {
+        const termino = searchBar.value;
+        // No esperamos a que el usuario termine de escribir, buscamos en tiempo real.
+        filtrarListaPacientes(termino);
+    });
+
     addPatientBtn.onclick = function() {
         modoFormularioPaciente = 'añadir';
         patientForm.reset(); 
@@ -130,24 +137,10 @@ function abrirModalConsulta() {
 }
 
 async function cargarListaPacientes() {
+    console.log("Pidiendo la lista inicial de pacientes a Python...");
     let pacientes = await eel.obtener_pacientes_py()();
-    const patientListElement = document.getElementById('patient-list');
-    patientListElement.innerHTML = '';
-    if (pacientes.length === 0) {
-        patientListElement.innerHTML = '<li>No hay pacientes registrados.</li>';
-        return;
-    }
-    pacientes.forEach(paciente => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${paciente.apellidos}, ${paciente.nombres}`;
-        listItem.dataset.pacienteId = paciente.id;
-        listItem.addEventListener('click', () => {
-            document.querySelectorAll('#patient-list li').forEach(li => li.classList.remove('active'));
-            listItem.classList.add('active');
-            mostrarDetallesPaciente(paciente.id);
-        });
-        patientListElement.appendChild(listItem);
-    });
+    renderizarListaPacientes(pacientes);
+    console.log("Lista inicial de pacientes cargada.");
 }
 
 // en web/script.js
@@ -254,4 +247,40 @@ async function mostrarDetallesPaciente(pacienteId) {
         }
     });
 
+}
+
+async function filtrarListaPacientes(termino) {
+    console.log(`Filtrando pacientes con el término: ${termino}`);
+    // Llama a la nueva función de Python para buscar
+    const pacientesFiltrados = await eel.buscar_pacientes_py(termino)();
+    // Usa la nueva función para "dibujar" los resultados
+    renderizarListaPacientes(pacientesFiltrados);
+}
+
+// --- ¡NUEVA FUNCIÓN REFACTORIZADA! ---
+// Esta función ahora tiene la única responsabilidad de "dibujar" la lista
+function renderizarListaPacientes(listaDePacientes) {
+    const patientListElement = document.getElementById('patient-list');
+    patientListElement.innerHTML = ''; // Limpiamos la lista
+
+    if (listaDePacientes.length === 0) {
+        patientListElement.innerHTML = '<li>No se encontraron pacientes.</li>';
+        return;
+    }
+
+    listaDePacientes.forEach(paciente => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${paciente.apellidos}, ${paciente.nombres}`;
+        listItem.dataset.pacienteId = paciente.id;
+        
+        listItem.addEventListener('click', () => {
+            // Quitamos la clase 'active' de cualquier otro elemento
+            document.querySelectorAll('#patient-list li').forEach(li => li.classList.remove('active'));
+            listItem.classList.add('active'); // Se la ponemos al actual
+            
+            mostrarDetallesPaciente(paciente.id);
+        });
+        
+        patientListElement.appendChild(listItem);
+    });
 }

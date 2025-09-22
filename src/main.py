@@ -24,7 +24,6 @@ def login(username, password):
 
 
 
-
 # --- El Controlador ---
 # Usamos el decorador @eel.expose para que esta función pueda ser llamada desde JavaScript.
 # Le damos un nombre para JS ('obtener_pacientes_py') para evitar confusiones.
@@ -137,6 +136,14 @@ def iniciar_app():
     # La aplicación ahora empieza en login.html
     eel.start('login.html', size=(600, 500), port=0)
     print("Aplicación cerrada.")
+
+@eel.expose('buscar_pacientes_py')
+def buscar_pacientes(termino):
+    """Función intermediaria para buscar pacientes desde JS."""
+    if not termino: # Si la barra de búsqueda está vacía, devuelve todos los pacientes
+        return gestor.obtener_todos_los_pacientes()
+    else:
+        return gestor.buscar_pacientes_por_termino(termino)
 
 if __name__ == "__main__":
     # Aquí podrías añadir la lógica de login en el futuro
