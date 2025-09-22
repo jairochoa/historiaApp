@@ -48,13 +48,45 @@ def agregar_paciente(paciente_data):
         nombres=paciente_data['nombres'],
         apellidos=paciente_data['apellidos'],
         fecha_nacimiento=paciente_data['fecha_nacimiento'],
-        telefono=paciente_data['telefono']
+        telefono=paciente_data['telefono'],
+        comentario=paciente_data['comentario'],
+        domicilio=paciente_data['domicilio']
+        
     )
     # Devolvemos un diccionario indicando si fue exitoso
     if nuevo_id:
         return {'exito': True, 'mensaje': 'Paciente agregado correctamente.'}
     else:
         return {'exito': False, 'mensaje': 'Error: La cédula ya está registrada.'}
+
+@eel.expose('agregar_consulta_py')
+def agregar_consulta(consulta_data):
+    print("Recibiendo datos para una nueva consulta:", consulta_data)
+    nuevo_id = gestor.agregar_consulta(
+        paciente_id=consulta_data['paciente_id'],
+        fecha=consulta_data['fecha'],
+        motivo=consulta_data['motivo_consulta'],
+        valoracion=consulta_data['valoracion'],
+        tratamiento=consulta_data['tratamiento'],
+        fur=consulta_data['FUR'],
+        gestas_parto=consulta_data['gestas_parto'],
+        gestas_cesarea=consulta_data['gestas_cesarea'],
+        gestas_aborto=consulta_data['gestas_aborto'],
+        anticonceptivos=consulta_data['anticonceptivos'],
+        ant_personales=consulta_data['antecedentes_personales'],
+        ant_familiares=consulta_data['antecedentes_familiares'],
+        examen_fisico=consulta_data['examen_fisico'],
+        ecografia=consulta_data['ecografia'],
+        diagnostico=consulta_data['diagnostico'],
+        plan=consulta_data['plan'],
+        medio_pago=consulta_data['medio_pago']
+    )
+    if nuevo_id:
+        return {'exito': True, 'mensaje': 'Consulta agregada correctamente.'}
+    else:
+        return {'exito': False, 'mensaje': 'Error al guardar la consulta.'}
+
+
 
 
 if __name__ == "__main__":

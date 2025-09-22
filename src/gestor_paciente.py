@@ -45,15 +45,15 @@ def verificar_usuario(username, password):
 
 # --- Funciones de Pacientes ---
 
-def agregar_paciente(cedula, nombres, apellidos, fecha_nacimiento, telefono):
+def agregar_paciente(cedula, nombres, apellidos, fecha_nacimiento, telefono, domicilio, comentario):
     """Añade un nuevo paciente a la base de datos."""
     conn = obtener_conexion_db()
     cursor = conn.cursor()
     
     try:
         cursor.execute(
-            "INSERT INTO pacientes (cedula, nombres, apellidos, fecha_nacimiento, telefono) VALUES (?, ?, ?, ?, ?)",
-            (cedula, nombres, apellidos, fecha_nacimiento, telefono)
+            "INSERT INTO pacientes (cedula, nombres, apellidos, fecha_nacimiento, telefono, domicilio, comentario) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (cedula, nombres, apellidos, fecha_nacimiento, telefono, domicilio, comentario)
         )
         conn.commit()
         print(f"Paciente '{nombres} {apellidos}' agregado exitosamente.")
@@ -105,16 +105,16 @@ def obtener_todos_los_pacientes():
 
 # --- Funciones de Consultas ---
 
-def agregar_consulta(paciente_id, fecha, motivo, valoracion, tratamiento, ruta_imagen=None):
+def agregar_consulta(paciente_id, fecha, motivo, valoracion, tratamiento, fur, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, ant_personales, ant_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago, ruta_imagen=None):
     """Añade una nueva consulta para un paciente existente."""
     conn = obtener_conexion_db()
     cursor = conn.cursor()
     
     try:
         cursor.execute(
-            """INSERT INTO consultas (paciente_id, fecha, motivo_consulta, valoracion, tratamiento, ruta_imagen)
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            (paciente_id, fecha, motivo, valoracion, tratamiento, ruta_imagen)
+            """INSERT INTO consultas (paciente_id, fecha, motivo_consulta, valoracion, tratamiento, ruta_imagen, FUR, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, antecedentes_personales, antecedentes_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (paciente_id, fecha, motivo, valoracion, tratamiento, ruta_imagen, fur, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, ant_personales, ant_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago)
         )
         conn.commit()
         print(f"Nueva consulta para el paciente ID {paciente_id} agregada exitosamente.")

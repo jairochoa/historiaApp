@@ -36,7 +36,8 @@ def crear_tablas():
         nombres TEXT NOT NULL,
         apellidos TEXT NOT NULL,
         fecha_nacimiento TEXT,
-        telefono TEXT
+        telefono TEXT,
+        comentario TEXT
     )
     """)
 

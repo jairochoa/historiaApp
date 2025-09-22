@@ -35,7 +35,9 @@ function setupEventListeners() {
             nombres: document.getElementById('nombres').value,
             apellidos: document.getElementById('apellidos').value,
             fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
-            telefono: document.getElementById('telefono').value
+            telefono: document.getElementById('telefono').value,
+            domicilio: document.getElementById('domicilio').value,
+            comentario: document.getElementById('comentario').value
         };
 
         const resultado = await eel.agregar_paciente_py(pacienteData)();
