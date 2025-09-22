@@ -105,16 +105,16 @@ def obtener_todos_los_pacientes():
 
 # --- Funciones de Consultas ---
 
-def agregar_consulta(paciente_id, fecha, motivo, valoracion, tratamiento, fur, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, ant_personales, ant_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago, ruta_imagen=None):
+def agregar_consulta(paciente_id, fecha, motivo, fur, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, ant_personales, ant_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago, ruta_imagen=None):
     """Añade una nueva consulta para un paciente existente."""
     conn = obtener_conexion_db()
     cursor = conn.cursor()
     
     try:
         cursor.execute(
-            """INSERT INTO consultas (paciente_id, fecha, motivo_consulta, valoracion, tratamiento, ruta_imagen, FUR, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, antecedentes_personales, antecedentes_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (paciente_id, fecha, motivo, valoracion, tratamiento, ruta_imagen, fur, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, ant_personales, ant_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago)
+            """INSERT INTO consultas (paciente_id, fecha, motivo_consulta, ruta_imagen, FUR, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, antecedentes_personales, antecedentes_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (paciente_id, fecha, motivo, ruta_imagen, fur, gestas_parto, gestas_cesarea, gestas_aborto, anticonceptivos, ant_personales, ant_familiares, examen_fisico, ecografia, diagnostico, plan, medio_pago)
         )
         conn.commit()
         print(f"Nueva consulta para el paciente ID {paciente_id} agregada exitosamente.")
@@ -149,42 +149,42 @@ def buscar_paciente_por_id(paciente_id):
     return paciente_dict, consultas_list
 
         
-if __name__ == '__main__':
-    # --- PRUEBAS ---
-    print("\n--- INICIANDO PRUEBAS DEL GESTOR ---")
+# if __name__ == '__main__':
+#     # --- PRUEBAS ---
+#     print("\n--- INICIANDO PRUEBAS DEL GESTOR ---")
     
-    # 1. Registrar un usuario (solo se necesita la primera vez)
-    # registrar_usuario("DraAna", "contraseña_segura_123")
+#     # 1. Registrar un usuario (solo se necesita la primera vez)
+#     # registrar_usuario("DraAna", "contraseña_segura_123")
     
-    # 2. Verificar el login
-    verificar_usuario("DraYasmin", "contraseña_segura_123")
-    verificar_usuario("DraYasmin", "contraseña_incorrecta")
+#     # 2. Verificar el login
+#     verificar_usuario("DraYasmin", "contraseña_segura_123")
+#     verificar_usuario("DraYasmin", "contraseña_incorrecta")
     
-    print("\n--- Pruebas de Pacientes ---")
-    # 3. Agregar un paciente nuevo
-    agregar_paciente("V12345678", "Ana", "Suarez", "1985-05-10", "555-1234")
+#     print("\n--- Pruebas de Pacientes ---")
+#     # 3. Agregar un paciente nuevo
+#     agregar_paciente("V12345678", "Ana", "Suarez", "1985-05-10", "555-1234")
     
-    # 4. Intentar agregar el mismo paciente de nuevo (debería fallar)
-    agregar_paciente("V13996491", "Yasmin", "Ramirez", "1985-05-10", "555-1234")
+#     # 4. Intentar agregar el mismo paciente de nuevo (debería fallar)
+#     agregar_paciente("V13996491", "Yasmin", "Ramirez", "1985-05-10", "555-1234")
     
-    # 5. Buscar al paciente y su historial (que estará vacío por ahora)
-    paciente, consultas = buscar_paciente_por_cedula("V12345678")
-    if paciente:
-        print(f"\nPaciente encontrado: {paciente['nombres']} {paciente['apellidos']}")
+#     # 5. Buscar al paciente y su historial (que estará vacío por ahora)
+#     paciente, consultas = buscar_paciente_por_cedula("V12345678")
+#     if paciente:
+#         print(f"\nPaciente encontrado: {paciente['nombres']} {paciente['apellidos']}")
         
-        # 6. Agregarle dos consultas
-        paciente_id_interno = paciente['id']
-        agregar_consulta(paciente_id_interno, "2025-09-20", "Chequeo general", "Paciente refiere buen estado de salud.", "Continuar dieta.")
-        agregar_consulta(paciente_id_interno, "2025-09-21", "Dolor de cabeza", "Migraña por estrés.", "Analgésicos y reposo.")
+#         # 6. Agregarle dos consultas
+#         paciente_id_interno = paciente['id']
+#         agregar_consulta(paciente_id_interno, "2025-09-20", "Chequeo general", "Paciente refiere buen estado de salud.", "Continuar dieta.")
+#         agregar_consulta(paciente_id_interno, "2025-09-21", "Dolor de cabeza", "Migraña por estrés.", "Analgésicos y reposo.")
         
-        # 7. Volver a buscarlo para ver su historial completo
-        paciente_actualizado, consultas_actualizadas = buscar_paciente_por_cedula("V12345678")
-        print(f"\nHistorial actualizado para {paciente_actualizado['nombres']}:")
-        for consulta in consultas_actualizadas:
-            print(f"  - Fecha: {consulta['fecha']}, Motivo: {consulta['motivo_consulta']}")
+#         # 7. Volver a buscarlo para ver su historial completo
+#         paciente_actualizado, consultas_actualizadas = buscar_paciente_por_cedula("V12345678")
+#         print(f"\nHistorial actualizado para {paciente_actualizado['nombres']}:")
+#         for consulta in consultas_actualizadas:
+#             print(f"  - Fecha: {consulta['fecha']}, Motivo: {consulta['motivo_consulta']}")
             
-    # 8. Obtener la lista de todos los pacientes
-    todos_los_pacientes = obtener_todos_los_pacientes()
-    print("\n--- Lista de todos los pacientes ---")
-    for p in todos_los_pacientes:
-        print(f"  - ID: {p['id']}, Cédula: {p['cedula']}, Nombre: {p['nombres']} {p['apellidos']}")
+#     # 8. Obtener la lista de todos los pacientes
+#     todos_los_pacientes = obtener_todos_los_pacientes()
+#     print("\n--- Lista de todos los pacientes ---")
+#     for p in todos_los_pacientes:
+#         print(f"  - ID: {p['id']}, Cédula: {p['cedula']}, Nombre: {p['nombres']} {p['apellidos']}")

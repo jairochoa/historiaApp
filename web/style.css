@@ -142,3 +142,15 @@ main {
     width: 100%;
     margin-top: 20px;
 }
+
+
+.consultation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.consultation-header h4 {
+    margin: 0;
+}

@@ -1,5 +1,8 @@
 // web/script.js
 
+// Se declara UNA SOLA VEZ aquí, en el ámbito global.
+let pacienteSeleccionadoId = null;
+
 window.onload = function() {
     setupEventListeners();
     cargarListaPacientes();
@@ -7,27 +10,39 @@ window.onload = function() {
 
 function setupEventListeners() {
     // --- Lógica para el Modal de Nuevo Paciente ---
-    const modal = document.getElementById('add-patient-modal');
-    const btn = document.getElementById('add-patient-btn');
-    const span = document.getElementsByClassName('close-btn')[0];
+    const patientModal = document.getElementById('add-patient-modal');
+    const addPatientBtn = document.getElementById('add-patient-btn');
+    const patientModalCloseBtn = patientModal.querySelector('.close-btn');
 
-    btn.onclick = function() {
-        modal.style.display = "block";
+    addPatientBtn.onclick = function() {
+        patientModal.style.display = "block";
+    }
+    patientModalCloseBtn.onclick = function() {
+        patientModal.style.display = "none";
     }
 
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
+    // --- Lógica para el Modal de Nueva Consulta ---
+    const consultationModal = document.getElementById('add-consultation-modal');
+    const consultationModalCloseBtn = consultationModal.querySelector('.close-btn');
 
+    consultationModalCloseBtn.onclick = function() {
+        consultationModal.style.display = "none";
+    }
+    
+    // Cierre de modales al hacer clic fuera
     window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
+        if (event.target == patientModal) {
+            patientModal.style.display = "none";
+        }
+        if (event.target == consultationModal) {
+            consultationModal.style.display = "none";
         }
     }
 
-    // --- Lógica para el envío del Formulario ---
-    const form = document.getElementById('patient-form');
-    form.addEventListener('submit', async function(event) {
+    // --- Lógica para el envío del Formulario de PACIENTE ---
+    // Le damos un nombre único a la variable del formulario: 'patientForm'
+    const patientForm = document.getElementById('patient-form');
+    patientForm.addEventListener('submit', async function(event) {
         event.preventDefault();
 
         const pacienteData = {
@@ -36,7 +51,6 @@ function setupEventListeners() {
             apellidos: document.getElementById('apellidos').value,
             fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
             telefono: document.getElementById('telefono').value,
-            domicilio: document.getElementById('domicilio').value,
             comentario: document.getElementById('comentario').value
         };
 
@@ -44,18 +58,59 @@ function setupEventListeners() {
 
         if (resultado.exito) {
             alert(resultado.mensaje);
-            modal.style.display = "none";
-            form.reset();
+            patientModal.style.display = "none";
+            patientForm.reset();
             cargarListaPacientes();
+        } else {
+            alert(resultado.mensaje);
+        }
+    })
+
+    // --- Lógica para el envío del Formulario de CONSULTA ---
+    const consultationForm = document.getElementById('consultation-form');
+    consultationForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const consultaData = {
+            paciente_id: pacienteSeleccionadoId,
+            fecha: new Date().toISOString().slice(0, 10),
+            fur: document.getElementById('fur').value,
+            gestas_parto: parseInt(document.getElementById('gestas_parto').value) || 0,
+            gestas_cesarea: parseInt(document.getElementById('gestas_cesarea').value) || 0,
+            gestas_aborto: parseInt(document.getElementById('gestas_aborto').value) || 0,
+            anticonceptivos: document.getElementById('anticonceptivos').value,
+            antecedentes_personales: document.getElementById('antecedentes_personales').value,
+            antecedentes_familiares: document.getElementById('antecedentes_familiares').value,
+            motivo_consulta: document.getElementById('motivo_consulta').value,
+            examen_fisico: document.getElementById('examen_fisico').value,
+            ecografia: document.getElementById('ecografia').value,
+            diagnostico: document.getElementById('diagnostico').value,
+            plan: document.getElementById('plan').value,
+            medio_pago: document.getElementById('medio_pago').value
+        };
+
+        const resultado = await eel.agregar_consulta_py(consultaData)();
+
+        if (resultado.exito) {
+            alert(resultado.mensaje);
+            consultationModal.style.display = "none";
+            consultationForm.reset();
+            mostrarDetallesPaciente(pacienteSeleccionadoId);
         } else {
             alert(resultado.mensaje);
         }
     });
 }
 
+function abrirModalConsulta() {
+    if (!pacienteSeleccionadoId) {
+        alert("Por favor, selecciona un paciente primero.");
+        return;
+    }
+    const modal = document.getElementById('add-consultation-modal');
+    modal.style.display = 'block';
+}
 
 async function cargarListaPacientes() {
-    console.log("Pidiendo la lista de pacientes a Python...");
     let pacientes = await eel.obtener_pacientes_py()();
     const patientListElement = document.getElementById('patient-list');
     patientListElement.innerHTML = '';
@@ -74,14 +129,11 @@ async function cargarListaPacientes() {
         });
         patientListElement.appendChild(listItem);
     });
-    console.log("Lista de pacientes cargada.");
 }
 
-let pacienteSeleccionadoId = null;
-
 async function mostrarDetallesPaciente(pacienteId) {
-    pacienteSeleccionadoId = pacienteId; // Guardamos el ID del paciente actual
-    console.log(`Pidiendo detalles para el paciente ID: ${pacienteId}`);
+    // Se le asigna un valor a la variable global, SIN 'let'.
+    pacienteSeleccionadoId = pacienteId;
     
     const data = await eel.buscar_paciente_por_id_py(pacienteId)();
     const detailsContainer = document.getElementById('patient-details');
@@ -91,7 +143,6 @@ async function mostrarDetallesPaciente(pacienteId) {
         return;
     }
 
-    // Construimos el HTML con los detalles del paciente
     let html = `
         <h3>${data.paciente.nombres} ${data.paciente.apellidos}</h3>
         <p><strong>Cédula:</strong> ${data.paciente.cedula}</p>
@@ -105,17 +156,21 @@ async function mostrarDetallesPaciente(pacienteId) {
     `;
 
     if (data.consultas.length > 0) {
-        html += '<ul>';
+        html += '<ul class="consultation-list">';
         data.consultas.forEach(consulta => {
-            html += `<li><strong>Fecha:</strong> ${consulta.fecha}<br><strong>Motivo:</strong> ${consulta.motivo_consulta}<br><strong>Valoración:</strong> ${consulta.valoracion}</li>`;
+            html += `
+                <li>
+                    <strong>Fecha: ${consulta.fecha}</strong><br>
+                    <strong>Motivo:</strong> ${consulta.motivo_consulta || 'N/A'}<br>
+                    <strong>Diagnóstico:</strong> ${consulta.diagnostico || 'N/A'}
+                </li>
+            `;
         });
         html += '</ul>';
     } else {
         html += '<p>No hay consultas registradas para este paciente.</p>';
     }
     detailsContainer.innerHTML = html;
-    
-    document.getElementById('add-consultation-btn').addEventListener('click', () => {
-        abrirModalConsulta();
-    });
+
+    document.getElementById('add-consultation-btn').addEventListener('click', abrirModalConsulta);
 }
