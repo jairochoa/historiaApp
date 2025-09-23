@@ -179,8 +179,10 @@ async function mostrarDetallesPaciente(pacienteId) {
     // 2. Preparamos las partes del encabezado.
     const nombreCompleto = `${data.paciente.nombres} ${data.paciente.apellidos}`;
     const edadTexto = `${edad} años`;
-    // El comentario solo se añade si existe.
-    const comentario = data.paciente.comentario ? `/ ${data.paciente.comentario}` : '';
+    // El comentario solo se añade si existe, y AHORA lo envolvemos en un <span>.
+    const comentario = data.paciente.comentario 
+    ? `/ <span class="header-comment">${data.paciente.comentario}</span>` 
+    : '';
 
     // 3. Unimos todo.
     const encabezadoDinamico = `${nombreCompleto} / ${edadTexto} ${comentario}`;
