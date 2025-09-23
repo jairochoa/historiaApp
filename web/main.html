@@ -11,7 +11,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid mt-4">
-            <a class="navbar-brand" href="#">🩺 Clínica Obstétrica Dra. Yasmin Ramírez</a>
+            <a class="navbar-brand" href="#">🩺 Dra. Yasmin D. Ramírez M. / Ginecóloga y Obstetra</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -76,16 +76,76 @@
     </div>
 
     <div id="add-consultation-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Añadir Nueva Consulta</h2>
-            <form id="consultation-form">
-                <input type="date" id="fur" name="fur" required>
-                <textarea id="motivo_consulta" placeholder="Motivo de la consulta..." required></textarea>
-                <button type="submit" class="btn btn-primary w-100">Guardar Consulta</button>
-            </form>
-        </div>
+    <div class="modal-content modal-lg">
+        <span class="close-btn">&times;</span>
+        <h2>Añadir Nueva Consulta</h2>
+        <form id="consultation-form">
+            <div class="consultation-details-grid">
+                <div>
+                    <label for="fecha_consulta">Fecha de Consulta:</label>
+                    <input type="date" id="fecha_consulta" name="fecha_consulta" class="form-control" required>
+                </div>
+                <div>
+                    <label for="fur">Fecha de Última Regla (FUR):</label>
+                    <input type="date" id="fur" name="fur" class="form-control" required>
+                </div>
+                <div>
+                    <label for="motivo_consulta">Motivo de Consulta:</label>
+                    <textarea id="motivo_consulta" class="form-control" rows="3" required></textarea>
+                </div>
+                <div>
+                    <label for="diagnostico">Diagnóstico:</label>
+                    <textarea id="diagnostico" class="form-control" rows="3"></textarea>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label for="plan">Plan:</label>
+                    <textarea id="plan" class="form-control" rows="3"></textarea>
+                </div>
+                <hr style="grid-column: 1 / -1;">
+                <div>
+                    <label>Gestas:</label>
+                    <div class="input-group">
+                        <span class="input-group-text">P</span>
+                        <input type="number" id="gestas_parto" class="form-control" value="0">
+                        <span class="input-group-text">C</span>
+                        <input type="number" id="gestas_cesarea" class="form-control" value="0">
+                        <span class="input-group-text">A</span>
+                        <input type="number" id="gestas_aborto" class="form-control" value="0">
+                    </div>
+                </div>
+                <div>
+                    <label for="medio_pago">Medio de Pago:</label>
+                    <select id="medio_pago" class="form-select">
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="PagoMovil">PagoMóvil</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </select>
+                </div>
+                 <div style="grid-column: 1 / -1;">
+                    <label for="anticonceptivos">Anticonceptivos:</label>
+                    <textarea id="anticonceptivos" class="form-control" rows="2"></textarea>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label for="antecedentes_personales">Antecedentes Personales:</label>
+                    <textarea id="antecedentes_personales" class="form-control" rows="3"></textarea>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label for="antecedentes_familiares">Antecedentes Familiares:</label>
+                    <textarea id="antecedentes_familiares" class="form-control" rows="3"></textarea>
+                </div>
+                 <div style="grid-column: 1 / -1;">
+                    <label for="examen_fisico">Examen Físico:</label>
+                    <textarea id="examen_fisico" class="form-control" rows="3"></textarea>
+                </div>
+                 <div style="grid-column: 1 / -1;">
+                    <label for="ecografia">Ecografía:</label>
+                    <textarea id="ecografia" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Guardar Consulta</button>
+        </form>
     </div>
+</div>
 
     <div id="view-consultation-modal" class="modal">
         <div class="modal-content modal-lg"> <span class="close-btn">&times;</span>
