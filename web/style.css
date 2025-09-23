@@ -186,36 +186,6 @@ main {
     margin-top: 15px;
 }
 
-/* Al final de web/style.css */
-
-.consultation-list li {
-    position: relative; /* Necesario para posicionar el botón de eliminar */
-    padding-right: 40px; /* Hacemos espacio para el botón */
-}
-
-.delete-consultation-btn {
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 50%; /* Lo hacemos redondo */
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    font-weight: bold;
-    line-height: 24px; /* Centra el texto verticalmente */
-    text-align: center;
-}
-
-.delete-consultation-btn:hover {
-    background-color: #c82333;
-}
-
-/* Al final de web/style.css */
-
 .edit-consultation-btn {
     background: none;
     border: none;
@@ -252,4 +222,22 @@ main {
     padding: 8px;
     background-color: #f8f9fa;
     border-radius: 4px;
+}
+
+/* en web/style.css */
+
+.modal-content.modal-lg {
+    max-width: 800px; /* Hacemos el modal más ancho */
+}
+
+/* Usamos CSS Grid para organizar el formulario en columnas */
+#consultation-form .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas de igual tamaño */
+    gap: 15px; /* Espacio entre los campos */
+}
+
+/* Hacemos que algunos campos ocupen las dos columnas */
+#consultation-form .full-width {
+    grid-column: 1 / -1;
 }

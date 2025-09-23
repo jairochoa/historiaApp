@@ -161,6 +161,8 @@ function renderizarListaPacientes(listaDePacientes) {
     });
 }
 
+// en web/script.js
+
 async function mostrarDetallesPaciente(pacienteId) {
     pacienteSeleccionadoId = pacienteId;
     const data = await eel.buscar_paciente_por_id_py(pacienteId)();
@@ -171,21 +173,35 @@ async function mostrarDetallesPaciente(pacienteId) {
         return;
     }
 
+    // --- 1. CONSTRUIMOS EL HTML BASE DEL PACIENTE ---
     let html = `
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="mb-0">${data.paciente.nombres} ${data.paciente.apellidos}</h3>
                     <div>
-                        <button id="edit-patient-btn" class="btn btn-secondary btn-sm">Editar</button>
-                        <button id="delete-patient-btn" class="btn btn-danger btn-sm">Eliminar</button>
+                        <button id="edit-patient-btn" class="btn btn-secondary btn-sm">Editar Paciente</button>
+                        <button id="delete-patient-btn" class="btn btn-danger btn-sm">Eliminar Paciente</button>
                     </div>
                 </div>
             </div>
             <div class="card-body">
-                <p><strong>Cédula:</strong> ${data.paciente.cedula}</p>
-                <p><strong>Teléfono:</strong> ${data.paciente.telefono}</p>
-                <p><strong>Comentario:</strong> ${data.paciente.comentario || '<em>Sin comentario.</em>'}</p>
+                <table class="table table-sm table-bordered">
+                    <tbody>
+                        <tr>
+                            <th style="width: 30%;">Cédula</th>
+                            <td>${data.paciente.cedula}</td>
+                        </tr>
+                        <tr>
+                            <th>Teléfono</th>
+                            <td>${data.paciente.telefono || ''}</td>
+                        </tr>
+                        <tr>
+                            <th>Comentario</th>
+                            <td>${data.paciente.comentario || ''}</td>
+                        </tr>
+                    </tbody>
+                </table>
                 <hr>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h4 class="mb-0">Historial de Consultas</h4>
@@ -193,10 +209,18 @@ async function mostrarDetallesPaciente(pacienteId) {
                 </div>
     `;
 
+    // --- 2. AÑADIMOS LA TABLA DE CONSULTAS SOLO SI EXISTEN ---
     if (data.consultas.length > 0) {
         html += `
             <table class="table table-striped table-hover mt-3">
-                <thead><tr><th>Fecha</th><th>Motivo</th><th>Diagnóstico</th><th class="text-end">Acciones</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Motivo</th>
+                        <th>Diagnóstico</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
                 <tbody>
         `;
         data.consultas.forEach(consulta => {
@@ -221,10 +245,16 @@ async function mostrarDetallesPaciente(pacienteId) {
     html += `</div></div>`; // Cierre de card-body y card
     detailsContainer.innerHTML = html;
 
-    // --- ACTIVACIÓN DE BOTONES DINÁMICOS ---
+    // --- 3. ACTIVAMOS LOS BOTONES (AHORA SIEMPRE EXISTEN LOS DE PACIENTE) ---
+
+    // Botones del PACIENTE
     document.getElementById('edit-patient-btn').addEventListener('click', () => abrirModalPaciente('editar', data.paciente));
     document.getElementById('delete-patient-btn').addEventListener('click', () => eliminarPaciente(data.paciente));
+
+    // Botón para AÑADIR una nueva consulta
     document.getElementById('add-consultation-btn').addEventListener('click', () => abrirModalConsulta('añadir'));
+
+    // Botones de ACCIÓN para CADA CONSULTA (solo se activan si la tabla existe)
     document.querySelectorAll('.view-consultation-btn').forEach(b => b.addEventListener('click', (e) => mostrarModalDetalleConsulta(e.target.dataset.consultaId)));
     document.querySelectorAll('.edit-consultation-btn').forEach(b => b.addEventListener('click', (e) => abrirModalConsulta('editar', e.target.dataset.consultaId)));
     document.querySelectorAll('.delete-consultation-btn').forEach(b => b.addEventListener('click', (e) => eliminarConsulta(e.target.dataset.consultaId)));
@@ -286,6 +316,7 @@ async function abrirModalConsulta(modo = 'añadir', consultaId = null) {
     if (modo === 'editar') {
         const consultaData = await eel.buscar_consulta_py(consultaId)();
         if (!consultaData) return alert("Error: No se encontraron los datos de la consulta.");
+        document.getElementById('fecha_consulta').value = consultaData.fecha;
         
         consultaSeleccionadaId = consultaId;
         modal.querySelector('h2').textContent = 'Editar Consulta';
@@ -298,6 +329,7 @@ async function abrirModalConsulta(modo = 'añadir', consultaId = null) {
         consultaSeleccionadaId = null;
         modal.querySelector('h2').textContent = 'Añadir Nueva Consulta';
         modal.querySelector('button[type="submit"]').textContent = 'Guardar Consulta';
+        document.getElementById('fecha_consulta').value = new Date().toISOString().slice(0, 10);
         form.reset();
     }
     modal.style.display = 'block';
