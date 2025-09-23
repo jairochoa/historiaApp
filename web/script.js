@@ -161,8 +161,6 @@ function renderizarListaPacientes(listaDePacientes) {
     });
 }
 
-// en web/script.js
-
 async function mostrarDetallesPaciente(pacienteId) {
     pacienteSeleccionadoId = pacienteId;
     const data = await eel.buscar_paciente_por_id_py(pacienteId)();
@@ -173,35 +171,52 @@ async function mostrarDetallesPaciente(pacienteId) {
         return;
     }
 
-    // --- 1. CONSTRUIMOS EL HTML BASE DEL PACIENTE ---
+    // --- CAMBIO CLAVE AQUÍ: CONSTRUIMOS EL ENCABEZADO DINÁMICO ---
+    
+    // 1. Calculamos la edad usando nuestra nueva función.
+    const edad = calcularEdad(data.paciente.fecha_nacimiento);
+    
+    // 2. Preparamos las partes del encabezado.
+    const nombreCompleto = `${data.paciente.nombres} ${data.paciente.apellidos}`;
+    const edadTexto = `${edad} años`;
+    // El comentario solo se añade si existe.
+    const comentario = data.paciente.comentario ? `/ ${data.paciente.comentario}` : '';
+
+    // 3. Unimos todo.
+    const encabezadoDinamico = `${nombreCompleto} / ${edadTexto} ${comentario}`;
+    
+    // --- FIN DEL CAMBIO ---
+
     let html = `
         <div class="card">
             <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0">${data.paciente.nombres} ${data.paciente.apellidos}</h3>
-                    <div>
-                        <button id="edit-patient-btn" class="btn btn-secondary btn-sm">Editar Paciente</button>
-                        <button id="delete-patient-btn" class="btn btn-danger btn-sm">Eliminar Paciente</button>
-                    </div>
-                </div>
-            </div>
+                <h3 class="mb-0">${encabezadoDinamico}</h3>
+            <div>
             <div class="card-body">
-                <table class="table table-sm table-bordered">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Cédula</th>
+                            <th>Fecha de Nacimiento</th>
+                            <th>Domicilio</th>
+                            <th>Teléfono</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         <tr>
-                            <th style="width: 30%;">Cédula</th>
                             <td>${data.paciente.cedula}</td>
-                        </tr>
-                        <tr>
-                            <th>Teléfono</th>
+                            <td>${data.paciente.fecha_nacimiento}</td>
+                            <td>${data.paciente.domicilio}</td>
                             <td>${data.paciente.telefono || ''}</td>
-                        </tr>
-                        <tr>
-                            <th>Comentario</th>
-                            <td>${data.paciente.comentario || ''}</td>
+                            <td class="text-end">
+                                <button id="edit-patient-btn" class="btn btn-secondary btn-sm">Editar</button>
+                                <button id="delete-patient-btn" class="btn btn-danger btn-sm">Eliminar</button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
+ 
                 <hr>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h4 class="mb-0">Historial de Consultas</h4>
@@ -209,7 +224,7 @@ async function mostrarDetallesPaciente(pacienteId) {
                 </div>
     `;
 
-    // --- 2. AÑADIMOS LA TABLA DE CONSULTAS SOLO SI EXISTEN ---
+    // --- Construcción de la tabla de consultas (sin cambios) ---
     if (data.consultas.length > 0) {
         html += `
             <table class="table table-striped table-hover mt-3">
@@ -245,16 +260,10 @@ async function mostrarDetallesPaciente(pacienteId) {
     html += `</div></div>`; // Cierre de card-body y card
     detailsContainer.innerHTML = html;
 
-    // --- 3. ACTIVAMOS LOS BOTONES (AHORA SIEMPRE EXISTEN LOS DE PACIENTE) ---
-
-    // Botones del PACIENTE
+    // --- ACTIVACIÓN DE TODOS LOS BOTONES ---
     document.getElementById('edit-patient-btn').addEventListener('click', () => abrirModalPaciente('editar', data.paciente));
     document.getElementById('delete-patient-btn').addEventListener('click', () => eliminarPaciente(data.paciente));
-
-    // Botón para AÑADIR una nueva consulta
     document.getElementById('add-consultation-btn').addEventListener('click', () => abrirModalConsulta('añadir'));
-
-    // Botones de ACCIÓN para CADA CONSULTA (solo se activan si la tabla existe)
     document.querySelectorAll('.view-consultation-btn').forEach(b => b.addEventListener('click', (e) => mostrarModalDetalleConsulta(e.target.dataset.consultaId)));
     document.querySelectorAll('.edit-consultation-btn').forEach(b => b.addEventListener('click', (e) => abrirModalConsulta('editar', e.target.dataset.consultaId)));
     document.querySelectorAll('.delete-consultation-btn').forEach(b => b.addEventListener('click', (e) => eliminarConsulta(e.target.dataset.consultaId)));
@@ -375,4 +384,25 @@ async function mostrarModalDetalleConsulta(consultaId) {
     } else {
         contentDiv.innerHTML = '<p>Error: No se pudieron cargar los detalles de la consulta.</p>';
     }
+}
+
+/**
+ * Calcula la edad a partir de una fecha de nacimiento en formato YYYY-MM-DD.
+ * @param {string} fechaNacimientoStr - La fecha de nacimiento.
+ * @returns {number|string} La edad en años o 'N/A' si la fecha es inválida.
+ */
+function calcularEdad(fechaNacimientoStr) {
+    if (!fechaNacimientoStr) {
+        return 'N/A';
+    }
+    const fechaNacimiento = new Date(fechaNacimientoStr);
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+    const mes = hoy.getMonth() - fechaNacimiento.getMonth();
+
+    // Ajusta la edad si aún no ha cumplido años este año
+    if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
+        edad--;
+    }
+    return edad;
 }
