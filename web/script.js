@@ -175,8 +175,16 @@ async function mostrarDetallesPaciente(pacienteId) {
         <div class="card">
             <div class="card-header"><h3 class="mb-0">${encabezadoDinamico}</h3></div>
             <div class="card-body">
-                <table class="table table-striped">
-                    <thead><tr><th>Cédula</th><th>Fecha de Nacimiento</th><th>Domicilio</th><th>Teléfono</th><th class="text-end">Acciones</th></tr></thead>
+                <table class="table table-striped table-hover mt-3 consultation-table">
+                    <thead>
+                        <tr>
+                            <th>Cédula</th>
+                            <th>Fecha de Nacimiento</th>
+                            <th>Domicilio</th>
+                            <th>Teléfono</th>
+                            <th class="text-end">Acciones</th>
+                            </tr>
+                    </thead>
                     <tbody><tr>
                         <td>${data.paciente.cedula}</td>
                         <td>${data.paciente.fecha_nacimiento || ''}</td>
@@ -196,13 +204,23 @@ async function mostrarDetallesPaciente(pacienteId) {
     `;
 
     if (data.consultas.length > 0) {
-        html += `<table class="table table-striped table-hover mt-3"><thead><tr><th>Fecha</th><th>Motivo</th><th>Diagnóstico</th><th class="text-end">Acciones</th></tr></thead><tbody>`;
+        html += `<table class="table table-striped table-hover mt-3 consultation-table">
+            <thead>
+                <tr>
+                    <th class="col-fecha">Fecha</th>
+                    <th class="col-motivo">Motivo</th>
+                    <th class="col-diagnostico">Diagnóstico</th>
+                    <th class="col-plan">Plan</th>
+                    <th class="col-acciones text-end">Acciones</th>
+                </tr>
+            </thead><tbody>`;
         data.consultas.forEach(consulta => {
             html += `
                 <tr>
                     <td>${consulta.fecha}</td>
                     <td>${consulta.motivo_consulta || ''}</td>
                     <td>${consulta.diagnostico || ''}</td>
+                    <td>${consulta.plan || ''}</td>
                     <td class="text-end">
                         <button class="btn btn-sm btn-info view-consultation-btn" data-consulta-id="${consulta.id}">Ver</button>
                         <button class="btn btn-sm btn-secondary edit-consultation-btn" data-consulta-id="${consulta.id}">Editar</button>

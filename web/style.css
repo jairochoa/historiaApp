@@ -141,3 +141,29 @@ body {
 .grid-span-4 {
     grid-column: span 4;
 }
+
+/* --- ESTILOS PARA LA TABLA DE CONSULTAS --- */
+
+/* 1. Forzamos el algoritmo de layout fijo */
+.consultation-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* 2. Definimos cómo se debe comportar el texto dentro de las celdas */
+.consultation-table th, 
+.consultation-table td {
+    /* Permite que las palabras largas se rompan y pasen a la siguiente línea */
+    overflow-wrap: break-word;
+    word-wrap: break-word; /* Para compatibilidad con navegadores más antiguos */
+
+    /* Alinea verticalmente el contenido de todas las celdas al medio */
+    vertical-align: middle;
+}
+
+/* 3. Asignamos un ancho en porcentaje a cada columna */
+.consultation-table .col-fecha { width: 10%; }
+.consultation-table .col-motivo { width: 25%; }
+.consultation-table .col-diagnostico { width: 25%; }
+.consultation-table .col-plan { width: 25%; }
+.consultation-table .col-acciones { width: 15%; }
