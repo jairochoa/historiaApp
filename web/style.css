@@ -34,7 +34,7 @@ body {
 /* Estructura de rejilla para los detalles de consulta en el modal de 'Ver' */
 .consultation-details-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 15px;
 }
 .consultation-details-grid p {
@@ -62,17 +62,17 @@ body {
 .modal-content {
     background-color: #fefefe;
     margin: 5% auto;
-    padding: 30px;
+    padding: 10px;
     border: none;
-    width: 90%;
-    max-width: 500px;
+    width: 110%;
+    max-width: 700px;
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     position: relative;
 }
 
 .modal-content.modal-lg {
-    max-width: 800px;
+    max-width: 1200px;
 }
 
 .close-btn {
@@ -101,6 +101,7 @@ body {
     grid-column: 1 / -1;
 }
 
+
 /* ==========================================================================
    4. ESTILOS PARA LA PANTALLA DE LOGIN
    ========================================================================== */
@@ -125,4 +126,18 @@ body {
     color: #dc3545;
     margin-top: 15px;
     font-size: 0.9em;
+}
+
+.grid-span-2 {
+    grid-column: span 2;
+}
+
+/* Helper opcional para que un item ocupe 3 columnas */
+.grid-span-3 {
+    grid-column: span 3;
+}
+
+/* Helper para que un item ocupe las 4 columnas (similar a .full-width) */
+.grid-span-4 {
+    grid-column: span 4;
 }

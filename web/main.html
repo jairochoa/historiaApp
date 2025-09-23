@@ -27,7 +27,6 @@
                     </li>
                 </ul>
                 <div class="d-flex align-items-center ms-lg-3">
-                    <input type="text" id="search-bar" class="form-control me-2" placeholder="Buscar paciente...">
                     <button id="add-patient-btn" class="btn btn-light text-primary fw-bold">Nuevo Paciente</button>
                 </div>
             </div>
@@ -37,6 +36,9 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3">
+                <div class="mb-3">
+                    <input type="text" id="search-bar" class="form-control" placeholder="Buscar paciente...">
+                </div>
                 <div class="card">
                     <div class="card-header fw-bold">Lista de Pacientes</div>
                     <ul id="patient-list" class="list-group list-group-flush">
@@ -98,19 +100,18 @@
                     <label for="fur">Fecha de Última Regla (FUR):</label>
                     <input type="date" id="fur" name="fur" class="form-control" required>
                 </div>
-                <div>
+                <div class="grid-span-2">
                     <label for="motivo_consulta">Motivo de Consulta:</label>
-                    <textarea id="motivo_consulta" class="form-control" rows="3" required></textarea>
+                    <textarea id="motivo_consulta" class="form-control" rows="2" required></textarea>
                 </div>
-                <div>
+                <div class="grid-span-2">
                     <label for="diagnostico">Diagnóstico:</label>
-                    <textarea id="diagnostico" class="form-control" rows="3"></textarea>
+                    <textarea id="diagnostico" class="form-control" rows="2"></textarea>
                 </div>
-                <div style="grid-column: 1 / -1;">
+                <div class="grid-span-2">
                     <label for="plan">Plan:</label>
-                    <textarea id="plan" class="form-control" rows="3"></textarea>
+                    <textarea id="plan" class="form-control" rows="2"></textarea>
                 </div>
-                <hr style="grid-column: 1 / -1;">
                 <div>
                     <label>Gestas:</label>
                     <div class="input-group">
@@ -122,7 +123,7 @@
                         <input type="number" id="gestas_aborto" class="form-control" value="0">
                     </div>
                 </div>
-                <div>
+                <div class="grid-span-2">
                     <label for="medio_pago">Medio de Pago:</label>
                     <select id="medio_pago" class="form-select">
                         <option value="Efectivo">Efectivo</option>
@@ -130,25 +131,25 @@
                         <option value="Transferencia">Transferencia</option>
                     </select>
                 </div>
-                 <div style="grid-column: 1 / -1;">
+                 <div class="grid-span-2">
                     <label for="anticonceptivos">Anticonceptivos:</label>
                     <textarea id="anticonceptivos" class="form-control" rows="2"></textarea>
                 </div>
-                <div style="grid-column: 1 / -1;">
+                <div class="grid-span-2">
                     <label for="antecedentes_personales">Antecedentes Personales:</label>
-                    <textarea id="antecedentes_personales" class="form-control" rows="3"></textarea>
+                    <textarea id="antecedentes_personales" class="form-control" rows="2"></textarea>
                 </div>
-                <div style="grid-column: 1 / -1;">
+                <div class="grid-span-2">
                     <label for="antecedentes_familiares">Antecedentes Familiares:</label>
-                    <textarea id="antecedentes_familiares" class="form-control" rows="3"></textarea>
+                    <textarea id="antecedentes_familiares" class="form-control" rows="2"></textarea>
                 </div>
-                 <div style="grid-column: 1 / -1;">
+                 <div class="grid-span-2">
                     <label for="examen_fisico">Examen Físico:</label>
-                    <textarea id="examen_fisico" class="form-control" rows="3"></textarea>
+                    <textarea id="examen_fisico" class="form-control" rows="2"></textarea>
                 </div>
-                 <div style="grid-column: 1 / -1;">
+                 <div class="grid-span-2">
                     <label for="ecografia">Ecografía:</label>
-                    <textarea id="ecografia" class="form-control" rows="3"></textarea>
+                    <textarea id="ecografia" class="form-control" rows="2"></textarea>
                 </div>
             </div>
             <button type="submit" class="btn btn-primary w-100 mt-3">Guardar Consulta</button>
