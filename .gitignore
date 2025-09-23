@@ -19,3 +19,7 @@ __pycache__/
 # Caché de herramientas de desarrollo
 .vscode/
 .idea/
+
+/web/script_.js
+/web/style_.css
+/web/main_.html

@@ -13,33 +13,31 @@ window.onload = function() {
     configurarLimitesDeFechas();
 };
 
-// --- CONFIGURACIÓN DE EVENTOS ---
+// --- CONFIGURACIÓN DE EVENTOS PRINCIPALES ---
 function setupEventListeners() {
     // 1. BARRA DE BÚSQUEDA
     const searchBar = document.getElementById('search-bar');
     searchBar.addEventListener('keyup', () => filtrarListaPacientes(searchBar.value));
 
-    // 2. MODAL Y FORMULARIO DE PACIENTES
+    // 2. MODALES Y FORMULARIOS
     const patientModal = document.getElementById('add-patient-modal');
     const addPatientBtn = document.getElementById('add-patient-btn');
     const patientForm = document.getElementById('patient-form');
-    patientModal.querySelector('.close-btn').onclick = () => { patientModal.style.display = "none"; };
-    addPatientBtn.onclick = () => abrirModalPaciente('añadir');
-
-    patientForm.addEventListener('submit', handlePatientFormSubmit);
-
-    // 3. MODAL Y FORMULARIO DE CONSULTAS
     const consultationModal = document.getElementById('add-consultation-modal');
     const consultationForm = document.getElementById('consultation-form');
-    consultationModal.querySelector('.close-btn').onclick = () => { consultationModal.style.display = "none"; };
-    
-    consultationForm.addEventListener('submit', handleConsultationFormSubmit);
-
-    // 4. MODAL DE VER DETALLES DE CONSULTA
     const viewModal = document.getElementById('view-consultation-modal');
+
+    // Asignación de eventos de clic
+    addPatientBtn.onclick = () => abrirModalPaciente('añadir');
+    patientForm.addEventListener('submit', handlePatientFormSubmit);
+    consultationForm.addEventListener('submit', handleConsultationFormSubmit);
+    
+    // Asignación de eventos para los botones de cierre 'x'
+    patientModal.querySelector('.close-btn').onclick = () => { patientModal.style.display = "none"; };
+    consultationModal.querySelector('.close-btn').onclick = () => { consultationModal.style.display = "none"; };
     viewModal.querySelector('.close-btn').onclick = () => { viewModal.style.display = "none"; };
 
-    // 5. CIERRE GENERAL DE MODALES
+    // Cierre de modales al hacer clic fuera
     window.onclick = function(event) {
         if (event.target == patientModal) patientModal.style.display = "none";
         if (event.target == consultationModal) consultationModal.style.display = "none";
@@ -47,11 +45,10 @@ function setupEventListeners() {
     };
 }
 
-// --- MANEJADORES DE FORMULARIOS ---
+// --- MANEJADORES DE ENVÍO DE FORMULARIOS ---
 
 async function handlePatientFormSubmit(event) {
     event.preventDefault();
-    // (Aquí va toda la lógica de validación y envío del formulario de paciente que ya tenías)
     const cedula = document.getElementById('cedula').value.trim();
     const nombres = document.getElementById('nombres').value.trim();
     const apellidos = document.getElementById('apellidos').value.trim();
@@ -61,9 +58,7 @@ async function handlePatientFormSubmit(event) {
     }
     
     const pacienteData = {
-        cedula: cedula,
-        nombres: nombres,
-        apellidos: apellidos,
+        cedula, nombres, apellidos,
         fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
         telefono: document.getElementById('telefono').value,
         domicilio: document.getElementById('domicilio').value,
@@ -91,7 +86,6 @@ async function handlePatientFormSubmit(event) {
 
 async function handleConsultationFormSubmit(event) {
     event.preventDefault();
-    // (Aquí va toda la lógica de validación y envío del formulario de consulta que ya tenías)
     const furStr = document.getElementById('fur').value;
     const motivo = document.getElementById('motivo_consulta').value.trim();
     if (!furStr || !motivo) {
@@ -100,7 +94,7 @@ async function handleConsultationFormSubmit(event) {
 
     const consultaData = {
         paciente_id: pacienteSeleccionadoId,
-        fecha: document.getElementById('fecha_consulta').value || new Date().toISOString().slice(0, 10),
+        fecha: document.getElementById('fecha_consulta').value,
         fur: furStr,
         gestas_parto: parseInt(document.getElementById('gestas_parto').value) || 0,
         gestas_cesarea: parseInt(document.getElementById('gestas_cesarea').value) || 0,
@@ -144,7 +138,7 @@ function renderizarListaPacientes(listaDePacientes) {
     const patientListElement = document.getElementById('patient-list');
     patientListElement.innerHTML = '';
     if (listaDePacientes.length === 0) {
-        patientListElement.innerHTML = '<li>No se encontraron pacientes.</li>';
+        patientListElement.innerHTML = '<li class="list-group-item">No se encontraron pacientes.</li>';
         return;
     }
     listaDePacientes.forEach(paciente => {
@@ -167,58 +161,33 @@ async function mostrarDetallesPaciente(pacienteId) {
     const detailsContainer = document.getElementById('patient-details');
     
     if (!data.paciente) {
-        detailsContainer.innerHTML = '<div class="card"><div class="card-body text-center"><p class="text-muted">Selecciona un paciente de la lista.</p></div></div>';
+        detailsContainer.innerHTML = '<div class="card"><div class="card-body text-center"><p class="text-muted">Selecciona un paciente.</p></div></div>';
         return;
     }
 
-    // --- CAMBIO CLAVE AQUÍ: CONSTRUIMOS EL ENCABEZADO DINÁMICO ---
-    
-    // 1. Calculamos la edad usando nuestra nueva función.
     const edad = calcularEdad(data.paciente.fecha_nacimiento);
-    
-    // 2. Preparamos las partes del encabezado.
     const nombreCompleto = `${data.paciente.nombres} ${data.paciente.apellidos}`;
     const edadTexto = `${edad} años`;
-    // El comentario solo se añade si existe, y AHORA lo envolvemos en un <span>.
-    const comentario = data.paciente.comentario 
-    ? `/ <span class="header-comment">${data.paciente.comentario}</span>` 
-    : '';
-
-    // 3. Unimos todo.
+    const comentario = data.paciente.comentario ? `/ <span class="header-comment">${data.paciente.comentario}</span>` : '';
     const encabezadoDinamico = `${nombreCompleto} / ${edadTexto} ${comentario}`;
     
-    // --- FIN DEL CAMBIO ---
-
     let html = `
         <div class="card">
-            <div class="card-header">
-                <h3 class="mb-0">${encabezadoDinamico}</h3>
-            <div>
+            <div class="card-header"><h3 class="mb-0">${encabezadoDinamico}</h3></div>
             <div class="card-body">
                 <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Cédula</th>
-                            <th>Fecha de Nacimiento</th>
-                            <th>Domicilio</th>
-                            <th>Teléfono</th>
-                            <th class="text-end">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>${data.paciente.cedula}</td>
-                            <td>${data.paciente.fecha_nacimiento}</td>
-                            <td>${data.paciente.domicilio}</td>
-                            <td>${data.paciente.telefono || ''}</td>
-                            <td class="text-end">
-                                <button id="edit-patient-btn" class="btn btn-secondary btn-sm">Editar</button>
-                                <button id="delete-patient-btn" class="btn btn-danger btn-sm">Eliminar</button>
-                            </td>
-                        </tr>
-                    </tbody>
+                    <thead><tr><th>Cédula</th><th>Fecha de Nacimiento</th><th>Domicilio</th><th>Teléfono</th><th class="text-end">Acciones</th></tr></thead>
+                    <tbody><tr>
+                        <td>${data.paciente.cedula}</td>
+                        <td>${data.paciente.fecha_nacimiento || ''}</td>
+                        <td>${data.paciente.domicilio || ''}</td>
+                        <td>${data.paciente.telefono || ''}</td>
+                        <td class="text-end">
+                            <button id="edit-patient-btn" class="btn btn-secondary btn-sm">Editar</button>
+                            <button id="delete-patient-btn" class="btn btn-danger btn-sm">Eliminar</button>
+                        </td>
+                    </tr></tbody>
                 </table>
- 
                 <hr>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h4 class="mb-0">Historial de Consultas</h4>
@@ -226,20 +195,8 @@ async function mostrarDetallesPaciente(pacienteId) {
                 </div>
     `;
 
-    // --- Construcción de la tabla de consultas (sin cambios) ---
     if (data.consultas.length > 0) {
-        html += `
-            <table class="table table-striped table-hover mt-3">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Motivo</th>
-                        <th>Diagnóstico</th>
-                        <th class="text-end">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
+        html += `<table class="table table-striped table-hover mt-3"><thead><tr><th>Fecha</th><th>Motivo</th><th>Diagnóstico</th><th class="text-end">Acciones</th></tr></thead><tbody>`;
         data.consultas.forEach(consulta => {
             html += `
                 <tr>
@@ -256,13 +213,13 @@ async function mostrarDetallesPaciente(pacienteId) {
         });
         html += `</tbody></table>`;
     } else {
-        html += '<p>No hay consultas registradas para este paciente.</p>';
+        html += '<p class="mt-3">No hay consultas registradas para este paciente.</p>';
     }
     
-    html += `</div></div>`; // Cierre de card-body y card
+    html += `</div></div>`;
     detailsContainer.innerHTML = html;
 
-    // --- ACTIVACIÓN DE TODOS LOS BOTONES ---
+    // --- ACTIVACIÓN DE BOTONES DINÁMICOS ---
     document.getElementById('edit-patient-btn').addEventListener('click', () => abrirModalPaciente('editar', data.paciente));
     document.getElementById('delete-patient-btn').addEventListener('click', () => eliminarPaciente(data.paciente));
     document.getElementById('add-consultation-btn').addEventListener('click', () => abrirModalConsulta('añadir'));
@@ -271,7 +228,7 @@ async function mostrarDetallesPaciente(pacienteId) {
     document.querySelectorAll('.delete-consultation-btn').forEach(b => b.addEventListener('click', (e) => eliminarConsulta(e.target.dataset.consultaId)));
 }
 
-// --- FUNCIONES AUXILIARES (las que faltaban o estaban repetidas) ---
+// --- FUNCIONES AUXILIARES ---
 
 async function filtrarListaPacientes(termino) {
     const pacientesFiltrados = await eel.buscar_pacientes_py(termino)();
@@ -313,7 +270,7 @@ async function eliminarPaciente(pacienteData) {
         const resultado = await eel.eliminar_paciente_py(pacienteData.id)();
         alert(resultado.mensaje);
         if (resultado.exito) {
-            document.getElementById('patient-details').innerHTML = '<div class="card"><div class="card-body text-center"><p class="text-muted">Selecciona un paciente de la lista.</p></div></div>';
+            document.getElementById('patient-details').innerHTML = '<div class="card"><div class="card-body text-center"><p class="text-muted">Selecciona un paciente.</p></div></div>';
             cargarListaPacientes();
         }
     }
@@ -327,11 +284,11 @@ async function abrirModalConsulta(modo = 'añadir', consultaId = null) {
     if (modo === 'editar') {
         const consultaData = await eel.buscar_consulta_py(consultaId)();
         if (!consultaData) return alert("Error: No se encontraron los datos de la consulta.");
-        document.getElementById('fecha_consulta').value = consultaData.fecha;
         
         consultaSeleccionadaId = consultaId;
         modal.querySelector('h2').textContent = 'Editar Consulta';
         modal.querySelector('button[type="submit"]').textContent = 'Actualizar Consulta';
+        // Rellenamos el formulario automáticamente
         Object.keys(consultaData).forEach(key => {
             const input = form.querySelector(`#${key}`);
             if (input) input.value = consultaData[key];
@@ -340,8 +297,8 @@ async function abrirModalConsulta(modo = 'añadir', consultaId = null) {
         consultaSeleccionadaId = null;
         modal.querySelector('h2').textContent = 'Añadir Nueva Consulta';
         modal.querySelector('button[type="submit"]').textContent = 'Guardar Consulta';
-        document.getElementById('fecha_consulta').value = new Date().toISOString().slice(0, 10);
         form.reset();
+        document.getElementById('fecha_consulta').value = new Date().toISOString().slice(0, 10);
     }
     modal.style.display = 'block';
 }
@@ -388,21 +345,12 @@ async function mostrarModalDetalleConsulta(consultaId) {
     }
 }
 
-/**
- * Calcula la edad a partir de una fecha de nacimiento en formato YYYY-MM-DD.
- * @param {string} fechaNacimientoStr - La fecha de nacimiento.
- * @returns {number|string} La edad en años o 'N/A' si la fecha es inválida.
- */
 function calcularEdad(fechaNacimientoStr) {
-    if (!fechaNacimientoStr) {
-        return 'N/A';
-    }
+    if (!fechaNacimientoStr) return 'N/A';
     const fechaNacimiento = new Date(fechaNacimientoStr);
     const hoy = new Date();
     let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
     const mes = hoy.getMonth() - fechaNacimiento.getMonth();
-
-    // Ajusta la edad si aún no ha cumplido años este año
     if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
         edad--;
     }

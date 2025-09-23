@@ -9,29 +9,52 @@
     <script type="text/javascript" src="/eel.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Gestor de Pacientes</h1>
-            <button id="add-patient-btn" class="btn">Nuevo Paciente</button>
-            <div class="search-container">
-                <input type="text" id="search-bar" placeholder="Buscar por cédula o nombre...">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid mt-4">
+            <a class="navbar-brand" href="#">🩺 Dra. Yasmin D. Ramírez M. / Ginecóloga y Obstetra</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                    </li>
+                </ul>
             </div>
-        </header>
-        
-        <main>
-            <div class="patient-list-container">
-                <h2>Lista de Pacientes</h2>
-                <ul id="patient-list">
-                    </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row mb-3 align-items-center">
+            <div class="col-md-6">
+                <button id="add-patient-btn" class="btn btn-primary">Nuevo Paciente</button>
             </div>
-            
-            <div class="patient-detail-container">
-                <h2>Detalles del Paciente</h2>
-                <div id="patient-details">
-                    <p>Selecciona un paciente de la lista para ver sus detalles.</p>
+            <div class="col-md-6">
+                <input type="text" id="search-bar" class="form-control" placeholder="Buscar por cédula o nombre...">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-2">
+                <div class="card">
+                    <div class="card-header fw-bold">
+                        Lista de Pacientes
+                    </div>
+                    <ul id="patient-list" class="list-group list-group-flush">
+                        </ul>
                 </div>
             </div>
-        </main>
+
+            <div class="col-md-10">
+                <div id="patient-details">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <p class="text-muted">Selecciona un paciente de la lista para ver sus detalles.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="add-patient-modal" class="modal">
@@ -45,38 +68,92 @@
                 <input type="date" id="fecha_nacimiento" name="fecha_nacimiento">
                 <input type="tel" id="telefono" name="telefono" placeholder="Teléfono">
                 <input type="text" id="domicilio" name="domicilio" placeholder="Domicilio">
-                <textarea id="comentario" name="comentario" placeholder="Comentario..."></textarea>
-                <button type="submit" class="btn">Guardar Paciente</button>
+                <textarea id="comentario" name="comentario" placeholder="Comentario..." rows="3"></textarea>
+                <button type="submit" class="btn btn-primary w-100">Guardar Paciente</button>
             </form>
         </div>
     </div>
 
     <div id="add-consultation-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Registrar Nueva Consulta</h2>
-            <form id="consultation-form">
-                <input type="date" id="fur" name="fur" required>
-                <input type="number" id="gestas_parto" name="gestas_parto" placeholder="Partos" required>
-                <input type="number" id="gestas_cesarea" name="gestas_cesarea" placeholder="Cesáreas" required>
-                <input type="number" id="gestas_aborto" name="gestas_aborto" placeholder="Abortos" required>
-                <input type="text" id="anticonceptivos" name="anticonceptivos" placeholder="Anticonceptivos" required>
-                <input type="text" id="antecedentes_personales" name="antecedentes_personales" placeholder="Antecedentes Personales" required>
-                <input type="text" id="antecedentes_familiares" name="antecedentes_familiares" placeholder="Antecedentes Familiares" required>
-                <input type="text" id="motivo_consulta" name="motivo_consulta" placeholder="Motivo Consulta" required>
-                <input type="text" id="examen_fisico" name="examen_fisico" placeholder="Examen Físico" required>
-                <input type="text" id="ecografia" name="ecografia" placeholder="Ecografia" required>
-                <input type="text" id="diagnostico" name="diagnostico" placeholder="Diagnóstico" required>
-                <input type="text" id="plan" name="plan" placeholder="Plan" required>
-                <select id="medio_pago" name="medio_pago">
-                    <option value="Efectivo">Efectivo</option>
-                    <option value="PagoMovil">PagoMóvil</option>
-                    <option value="Transferencia">Transferencia</option>
-                </select>
-                <button type="submit" class="btn">Guardar Paciente</button>
-            </form>
+    <div class="modal-content modal-lg">
+        <span class="close-btn">&times;</span>
+        <h2>Añadir Nueva Consulta</h2>
+        <form id="consultation-form">
+            <div class="consultation-details-grid">
+                <div>
+                    <label for="fecha_consulta">Fecha de Consulta:</label>
+                    <input type="date" id="fecha_consulta" name="fecha_consulta" class="form-control" readonly>
+                </div>
+                <div>
+                    <label for="fur">Fecha de Última Regla (FUR):</label>
+                    <input type="date" id="fur" name="fur" class="form-control" required>
+                </div>
+                <div>
+                    <label for="motivo_consulta">Motivo de Consulta:</label>
+                    <textarea id="motivo_consulta" class="form-control" rows="3" required></textarea>
+                </div>
+                <div>
+                    <label for="diagnostico">Diagnóstico:</label>
+                    <textarea id="diagnostico" class="form-control" rows="3"></textarea>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label for="plan">Plan:</label>
+                    <textarea id="plan" class="form-control" rows="3"></textarea>
+                </div>
+                <hr style="grid-column: 1 / -1;">
+                <div>
+                    <label>Gestas:</label>
+                    <div class="input-group">
+                        <span class="input-group-text">P</span>
+                        <input type="number" id="gestas_parto" class="form-control" value="0">
+                        <span class="input-group-text">C</span>
+                        <input type="number" id="gestas_cesarea" class="form-control" value="0">
+                        <span class="input-group-text">A</span>
+                        <input type="number" id="gestas_aborto" class="form-control" value="0">
+                    </div>
+                </div>
+                <div>
+                    <label for="medio_pago">Medio de Pago:</label>
+                    <select id="medio_pago" class="form-select">
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="PagoMovil">PagoMóvil</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </select>
+                </div>
+                 <div style="grid-column: 1 / -1;">
+                    <label for="anticonceptivos">Anticonceptivos:</label>
+                    <textarea id="anticonceptivos" class="form-control" rows="2"></textarea>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label for="antecedentes_personales">Antecedentes Personales:</label>
+                    <textarea id="antecedentes_personales" class="form-control" rows="3"></textarea>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label for="antecedentes_familiares">Antecedentes Familiares:</label>
+                    <textarea id="antecedentes_familiares" class="form-control" rows="3"></textarea>
+                </div>
+                 <div style="grid-column: 1 / -1;">
+                    <label for="examen_fisico">Examen Físico:</label>
+                    <textarea id="examen_fisico" class="form-control" rows="3"></textarea>
+                </div>
+                 <div style="grid-column: 1 / -1;">
+                    <label for="ecografia">Ecografía:</label>
+                    <textarea id="ecografia" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Guardar Consulta</button>
+        </form>
+    </div>
+</div>
+
+    <div id="view-consultation-modal" class="modal">
+        <div class="modal-content modal-lg"> <span class="close-btn">&times;</span>
+            <h2>Detalles de la Consulta</h2>
+            <div id="consultation-details-content">
+                </div>
         </div>
     </div>
+
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
