@@ -235,3 +235,21 @@ main {
     background-image: linear-gradient(to right, #ffafbd, #ffc3a0);
     border: none; /* Quitamos cualquier borde por defecto */
 }
+
+.modal-lg {
+    max-width: 800px; /* Hacemos el modal de detalles más ancho */
+}
+
+/* Estilo para los detalles dentro del modal */
+.consultation-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas */
+    gap: 15px;
+}
+
+.consultation-details-grid p {
+    margin: 0;
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}

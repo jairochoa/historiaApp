@@ -177,15 +177,22 @@ function setupEventListeners() {
         }
     });
 
-    // --- 4. LÓGICA GENERAL DE CIERRE DE MODALES ---
+   // Lógica para cerrar el modal de detalles
+    const viewModal = document.getElementById('view-consultation-modal');
+    const viewModalCloseBtn = viewModal.querySelector('.close-btn');
+
+    viewModalCloseBtn.onclick = function() {
+        viewModal.style.display = "none";
+    }
+
+    // Actualizamos el window.onclick para que también cierre este modal
     window.onclick = function(event) {
-        if (event.target == patientModal) {
-            patientModal.style.display = "none";
+        // ... (tu if para patientModal) ...
+        // ... (tu if para consultationModal) ...
+        if (event.target == viewModal) {
+            viewModal.style.display = "none";
         }
-        if (event.target == consultationModal) {
-            consultationModal.style.display = "none";
-        }
-    };
+    }
 }
 
 function abrirModalConsulta(modo = 'añadir', consultaData = null) {
@@ -257,30 +264,52 @@ async function mostrarDetallesPaciente(pacienteId) {
     `;
 
     if (data.consultas.length > 0) {
-        html += '<ul class="consultation-list">';
-        data.consultas.forEach(consulta => {
-            // Añadimos los botones de Editar y Eliminar a cada consulta
-            html += `
-                <li>
-                    <div>
-                        <strong>Fecha: ${consulta.fecha}</strong><br>
-                        <strong>Motivo:</strong> ${consulta.motivo_consulta || 'N/A'}<br>
-                        <strong>Diagnóstico:</strong> ${consulta.diagnostico || 'N/A'}
-                    </div>
-                    <div>
-                        <button class="edit-consultation-btn" data-consulta-id="${consulta.id}">✏️</button>
-                        <button class="delete-consultation-btn" data-consulta-id="${consulta.id}">&times;</button>
-                    </div>
-                </li>
-            `;
-        });
-        html += '</ul>';
+    // Usamos clases de Bootstrap para una tabla estilizada y responsiva
+    html += `
+        <table class="table table-striped table-hover mt-3">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Motivo de la Consulta</th>
+                    <th>Diagnóstico</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    data.consultas.forEach(consulta => {
+        html += `
+            <tr>
+                <td>${consulta.fecha}</td>
+                <td>${consulta.motivo_consulta || ''}</td>
+                <td>${consulta.diagnostico || ''}</td>
+                <td>
+                    <button class="btn btn-sm btn-info view-consultation-btn" data-consulta-id="${consulta.id}">Ver Detalles</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    html += `
+            </tbody>
+        </table>
+    `;
     } else {
         html += '<p>No hay consultas registradas para este paciente.</p>';
     }
     
     // Inserta todo el HTML generado en el contenedor de detalles.
     detailsContainer.innerHTML = html;
+
+    // --- Damos vida a los nuevos botones de "Ver Detalles" ---
+    document.querySelectorAll('.view-consultation-btn').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const consultaId = event.target.dataset.consultaId;
+            // Llamamos a una nueva función para mostrar el modal con los detalles
+            mostrarModalDetalleConsulta(consultaId);
+        });
+    });
 
     // --- Activación de los Botones ---
 
@@ -412,4 +441,42 @@ function configurarLimitesDeFechas() {
     // Establece la fecha máxima para la fecha de nacimiento y FUR como hoy
     document.getElementById('fecha_nacimiento').max = hoy;
     document.getElementById('fur').max = hoy; // Asumiendo que el ID es 'fur'
+}
+
+async function mostrarModalDetalleConsulta(consultaId) {
+    const modal = document.getElementById('view-consultation-modal');
+    const contentDiv = document.getElementById('consultation-details-content');
+    
+    // Mostramos un loader mientras buscamos los datos
+    contentDiv.innerHTML = '<p>Cargando detalles...</p>';
+    modal.style.display = 'block';
+
+    // Llamamos a la función de Python que ya teníamos para buscar una consulta por ID
+    const consulta = await eel.buscar_consulta_py(consultaId)();
+
+    if (consulta) {
+        // Calculamos el total de gestas
+        const totalGestas = (consulta.gestas_parto || 0) + (consulta.gestas_cesarea || 0) + (consulta.gestas_aborto || 0);
+
+        // Construimos el HTML con todos los detalles en una rejilla
+        contentDiv.innerHTML = `
+            <div class="consultation-details-grid">
+                <p><strong>Fecha:</strong> ${consulta.fecha}</p>
+                <p><strong>FUR:</strong> ${consulta.FUR}</p>
+                <p><strong>Motivo:</strong> ${consulta.motivo_consulta || ''}</p>
+                <p><strong>Diagnóstico:</strong> ${consulta.diagnostico || ''}</p>
+                <p><strong>Examen Físico:</strong> ${consulta.examen_fisico || ''}</p>
+                <p><strong>Plan:</strong> ${consulta.plan || ''}</p>
+                <p><strong>Ecografía:</strong> ${consulta.ecografia || ''}</p>
+                <p><strong>Medio de Pago:</strong> ${consulta.medio_pago || ''}</p>
+                <p><strong>Gestas (Total: ${totalGestas}):</strong> P:${consulta.gestas_parto}, C:${consulta.gestas_cesarea}, A:${consulta.gestas_aborto}</p>
+                <p><strong>Anticonceptivos:</strong> ${consulta.anticonceptivos || ''}</p>
+            </div>
+            <hr>
+            <p><strong>Antecedentes Personales:</strong> ${consulta.antecedentes_personales || ''}</p>
+            <p><strong>Antecedentes Familiares:</strong> ${consulta.antecedentes_familiares || ''}</p>
+        `;
+    } else {
+        contentDiv.innerHTML = '<p>Error: No se pudieron cargar los detalles de la consulta.</p>';
+    }
 }
