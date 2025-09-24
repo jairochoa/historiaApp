@@ -161,26 +161,32 @@ def modificar_consulta(consulta_id, consulta_data):
     else:
         return {'exito': False, 'mensaje': 'Error al actualizar la consulta.'}
 
+# en src/main.py
+
 @eel.expose('obtener_estadisticas_py')
 def obtener_estadisticas():
-    """
-    Calcula las estadísticas clave para el dashboard y las devuelve.
-    Por ahora, solo cuenta el total de pacientes.
-    """
+    """Calcula y devuelve un diccionario completo de estadísticas, incluso si hay errores."""
+    stats = {
+        'total_pacientes': 0,
+        'total_consultas': 0,
+        'desglose_pagos': [] # Devuelve una lista vacía por defecto
+    }
     try:
-        # Llama a la función que ya teníamos para obtener la lista
-        todos_los_pacientes = gestor.obtener_todos_los_pacientes()
+        todos_pacientes = gestor.obtener_todos_los_pacientes()
+        total_consultas = gestor.contar_consultas_totales()
+        desglose_pagos = gestor.contar_por_medio_pago()
+        distribucion_edades = gestor.obtener_distribucion_edades()
         
-        # Prepara un diccionario con las estadísticas
-        stats = {
-            'total_pacientes': len(todos_los_pacientes)
-            # Aquí añadiremos más estadísticas en el futuro
-        }
-        return stats
+        stats['total_pacientes'] = len(todos_pacientes)
+        stats['total_consultas'] = total_consultas
+        stats['desglose_pagos'] = desglose_pagos
+        stats['distribucion_edades'] = distribucion_edades
+        
     except Exception as e:
         print(f"Error al calcular estadísticas: {e}")
-        return {'total_pacientes': 'Error'}
+        # En caso de error, el diccionario ya tiene valores seguros por defecto
 
+    return stats
 
 if __name__ == "__main__":
     # Aquí podrías añadir la lógica de login en el futuro

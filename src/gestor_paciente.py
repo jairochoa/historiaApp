@@ -426,7 +426,92 @@ def modificar_consulta(consulta_id, consulta_data):
     finally:
         conn.close()
 
+def contar_consultas_totales():
+    """Cuenta el número total de consultas registradas."""
+    conn = obtener_conexion_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT COUNT(id) FROM consultas")
+        total = cursor.fetchone()[0]
+        return total
+    except Exception as e:
+        print(f"Error al contar consultas: {e}")
+        return 0
+    finally:
+        conn.close()
 
+def contar_por_medio_pago():
+    """Cuenta las consultas y las agrupa por medio de pago."""
+    conn = obtener_conexion_db()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            SELECT medio_pago, COUNT(id) as total
+            FROM consultas
+            WHERE medio_pago IS NOT NULL AND medio_pago != ''
+            GROUP BY medio_pago
+            ORDER BY total DESC
+        """)
+        registros = cursor.fetchall()
+        return [dict(registro) for registro in registros]
+    except Exception as e:
+        print(f"Error al contar por medio de pago: {e}")
+        return []
+    finally:
+        conn.close()
+
+def obtener_distribucion_edades():
+    """
+    Calcula la edad de todos los pacientes y los agrupa en rangos definidos.
+    """
+    conn = obtener_conexion_db()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("SELECT fecha_nacimiento FROM pacientes WHERE fecha_nacimiento IS NOT NULL AND fecha_nacimiento != ''")
+        registros = cursor.fetchall()
+        
+        rangos = {
+            "Menos de 20": 0, "20-29": 0, "30-39": 0,
+            "40-49": 0, "50-59": 0, "60 o más": 0
+        }
+        
+        hoy = date.today()
+        
+        for registro in registros:
+            try:
+                fecha_nac = date.fromisoformat(registro['fecha_nacimiento'])
+                edad = hoy.year - fecha_nac.year - ((hoy.month, hoy.day) < (fecha_nac.month, fecha_nac.day))
+                
+                if edad < 20:
+                    rangos["Menos de 20"] += 1
+                elif 20 <= edad <= 29:
+                    rangos["20-29"] += 1
+                elif 30 <= edad <= 39:
+                    rangos["30-39"] += 1
+                elif 40 <= edad <= 49:
+                    rangos["40-49"] += 1
+                elif 50 <= edad <= 59:
+                    rangos["50-59"] += 1
+                else:
+                    rangos["60 o más"] += 1
+            except (ValueError, TypeError):
+                # Ignora fechas de nacimiento con formato incorrecto
+                continue
+        
+        # Preparamos los datos para que Chart.js los entienda fácilmente
+        labels = list(rangos.keys())
+        data = list(rangos.values())
+        
+        return {'labels': labels, 'data': data}
+
+    except Exception as e:
+        print(f"Error al obtener distribución de edades: {e}")
+        return {'labels': [], 'data': []}
+    finally:
+        conn.close()
 
 
 

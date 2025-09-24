@@ -5,6 +5,8 @@ let pacienteSeleccionadoId = null;
 let modoFormularioPaciente = 'añadir';
 let modoFormularioConsulta = 'añadir';
 let consultaSeleccionadaId = null;
+let myPaymentChart = null;
+let myAgeChart = null; 
 
 // --- FUNCIÓN DE ARRANQUE ---
 window.onload = function() {
@@ -458,18 +460,75 @@ function calcularEdad(fechaNacimientoStr) {
     return edad;
 }
 
+// en web/script.js
+
 async function cargarDashboard() {
     console.log("Pidiendo estadísticas a Python para el dashboard...");
     try {
-        // Llama a la función de Python que acabamos de crear
         const stats = await eel.obtener_estadisticas_py()();
         
-        if (stats) {
-            // Encuentra el h1 por su id y actualiza su contenido
-            document.getElementById('stat-total-pacientes').textContent = stats.total_pacientes;
+        if (!stats) return; // Si no hay estadísticas, no hacemos nada
+
+        // 1. Actualizamos las tarjetas de totales
+        document.getElementById('stat-total-pacientes').textContent = stats.total_pacientes || 0;
+        document.getElementById('stat-total-consultas').textContent = stats.total_consultas || 0;
+
+        // 2. Lógica para el GRÁFICO DE TORTA (Medios de Pago)
+        const paymentCanvas = document.getElementById('payment-chart');
+        if (paymentCanvas) {
+            if (myPaymentChart) {
+                myPaymentChart.destroy();
+            }
+            if (stats.desglose_pagos && Array.isArray(stats.desglose_pagos)) {
+                const labels = stats.desglose_pagos.map(pago => pago.medio_pago);
+                const dataValues = stats.desglose_pagos.map(pago => pago.total);
+
+                myPaymentChart = new Chart(paymentCanvas.getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: dataValues,
+                            backgroundColor: ['rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)', 'rgba(75, 192, 192, 0.7)'],
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top' } }
+                    }
+                });
+            }
         }
+
+        // 3. Lógica para el HISTOGRAMA (Distribución de Edades)
+        const ageCanvas = document.getElementById('age-distribution-chart');
+        if (ageCanvas) {
+            if (myAgeChart) {
+                myAgeChart.destroy();
+            }
+            if (stats.distribucion_edades) {
+                myAgeChart = new Chart(ageCanvas.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: stats.distribucion_edades.labels,
+                        datasets: [{
+                            label: 'Número de Pacientes',
+                            data: stats.distribucion_edades.data,
+                            backgroundColor: 'rgba(255, 159, 64, 0.7)',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+
     } catch (error) {
         console.error("Error al cargar los datos del dashboard:", error);
-        document.getElementById('stat-total-pacientes').textContent = 'E'; // 'E' de Error
     }
 }

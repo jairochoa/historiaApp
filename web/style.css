@@ -201,3 +201,26 @@ input, textarea {
 #search-clear-btn {
     display: none; /* Oculto por defecto */
 }
+
+/* Reduce el tamaño de la fuente para los números grandes en las tarjetas */
+.card .card-title {
+    font-size: 2.5rem; /* Elige el tamaño que prefieras (ej. 3rem, 4rem, etc.) */
+    margin-bottom: 0;
+}
+
+/* Limita la altura del cuerpo de la tarjeta que contiene un canvas (gráfico) */
+.card-body > canvas {
+    max-height: 250px; /* Ajusta este valor a la altura que desees */
+}
+
+#age-chart-container {
+    /* Ajusta este valor hasta que se alinee perfectamente con el gráfico de torta */
+    min-height: 200px; 
+    position: relative
+}
+
+#pie-chart-container {
+    /* Ajusta este valor hasta que se alinee perfectamente con el gráfico de torta */
+    min-height: 180px; 
+    position: relative
+}
