@@ -1,22 +1,33 @@
+import sys
 import eel
-import gestor_paciente as gestor # Importamos nuestro módulo de lógica
+import os
+from . import gestor_paciente as gestor # Importamos nuestro módulo de lógica
 
 # Inicializa Eel y le dice dónde están los archivos de la interfaz ('web')
-eel.init('web')
+ruta_script = os.path.dirname(os.path.abspath(__file__))
+ruta_web = os.path.join(os.path.dirname(ruta_script), 'web')
+eel.init(ruta_web)
+#eel.init('web')
 
 # Simula una sesión para saber quién está logueado.
 sesion_actual = {'usuario': None, 'rol': None}
+
+login_exitoso = False
 
 # --- Funciones de Login Expuestas ---
 
 @eel.expose('login_py')
 def login(username, password):
-    """Verifica las credenciales y actualiza la sesión."""
+    """Verifica las credenciales y, si son correctas, levanta la bandera de login."""
+    global login_exitoso # Le decimos a la función que vamos a modificar la variable global
+    
     usuario_verificado = gestor.verificar_usuario(username, password)
     if usuario_verificado:
         sesion_actual['usuario'] = usuario_verificado['username']
         sesion_actual['rol'] = usuario_verificado['rol']
-        # Le decimos a JS que el login fue exitoso para que redirija
+        
+        login_exitoso = True # <-- 1. Levantamos la bandera ANTES de redirigir
+        
         eel.redirigir_a_main()
         return {'exito': True}
     else:
@@ -48,12 +59,6 @@ def buscar_paciente(paciente_id):
     paciente, consultas = gestor.buscar_paciente_por_id(paciente_id)
     return {'paciente': paciente, 'consultas': consultas}
 
-# --- Punto de Entrada de la Aplicación ---
-def iniciar_app():
-    """Inicia la aplicación de escritorio con Eel."""
-    print("Iniciando aplicación...")
-    eel.start('main.html', size=(1920, 1080), port=0) # port=0 busca un puerto libre
-    print("Aplicación cerrada.")
 
 @eel.expose('agregar_paciente_py')
 def agregar_paciente(paciente_data):
@@ -127,15 +132,6 @@ def eliminar_paciente(paciente_id):
     else:
         return {'exito': False, 'mensaje': 'Error al eliminar el paciente.'}
 
-def iniciar_app():
-    """
-    Modificamos la función para que inicie en la pantalla de login.
-    """
-    print("Iniciando aplicación en la pantalla de login...")
-    # La aplicación ahora empieza en login.html
-    eel.start('login.html', size=(600, 500), port=0)
-    print("Aplicación cerrada.")
-
 @eel.expose('buscar_pacientes_py')
 def buscar_pacientes(termino):
     """Función intermediaria para buscar pacientes desde JS."""
@@ -170,8 +166,78 @@ def modificar_consulta(consulta_id, consulta_data):
     else:
         return {'exito': False, 'mensaje': 'Error al actualizar la consulta.'}
 
+# en src/main.py
 
+@eel.expose('obtener_estadisticas_py')
+def obtener_estadisticas():
+    """Calcula y devuelve un diccionario completo de estadísticas, incluso si hay errores."""
+    stats = {
+        'total_pacientes': 0,
+        'total_consultas': 0,
+        'desglose_pagos': [] # Devuelve una lista vacía por defecto
+    }
+    try:
+        todos_pacientes = gestor.obtener_todos_los_pacientes()
+        total_consultas = gestor.contar_consultas_totales()
+        desglose_pagos = gestor.contar_por_medio_pago()
+        distribucion_edades = gestor.obtener_distribucion_edades()
+        
+        stats['total_pacientes'] = len(todos_pacientes)
+        stats['total_consultas'] = total_consultas
+        stats['desglose_pagos'] = desglose_pagos
+        stats['distribucion_edades'] = distribucion_edades
+        
+    except Exception as e:
+        print(f"Error al calcular estadísticas: {e}")
+        # En caso de error, el diccionario ya tiene valores seguros por defecto
 
+    return stats
+
+@eel.expose('logout_py')
+def logout():
+    """Limpia los datos de la sesión actual."""
+    print(f"Cerrando sesión para el usuario: {sesion_actual['usuario']}")
+    sesion_actual['usuario'] = None
+    sesion_actual['rol'] = None
+    return {'exito': True}
+
+def on_close(page, sockets):
+    """
+    Ahora esta función es más inteligente: solo cierra el programa si el
+    cierre no fue causado por un login exitoso.
+    """
+    global login_exitoso
+    
+    # 2. Comprobamos el estado de la bandera
+    if not login_exitoso:
+        print("La ventana se ha cerrado por el usuario. Finalizando proceso.")
+        sys.exit() # Solo salimos si NO fue un login exitoso
+    else:
+        print("Redirección de login a main.html, el proceso continúa.")
+        # Reiniciamos la bandera para que el siguiente cierre (el real) sí funcione
+        login_exitoso = False
+
+def iniciar_app():
+    """Inicia la aplicación de escritorio en la pantalla de login."""
+    print("Iniciando aplicación en la pantalla de login...")
+    
+    # Añadimos flags de Chrome para deshabilitar la caché durante el desarrollo
+    argumentos_navegador = [
+        '--disable-cache', 
+        '--disk-cache-size=0',
+        '--incognito' # Forzamos el modo incógnito como medida extra
+    ]
+    try:
+        eel.start(
+            'login.html', 
+            size=(1920, 1080), 
+            port=0, 
+            close_callback=on_close,
+            # Le pasamos los flags al navegador
+            cmdline_args=argumentos_navegador
+        )
+    except (SystemExit, MemoryError, KeyboardInterrupt):
+        print("Cerrando la aplicación.")
 
 if __name__ == "__main__":
     # Aquí podrías añadir la lógica de login en el futuro

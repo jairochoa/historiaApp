@@ -3,19 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title>Iniciar Sesión</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="style.css">
     <script type="text/javascript" src="/eel.js"></script>
 </head>
 <body class="login-body">
-    <div class="login-container">
-        <h2>Iniciar Sesión</h2>
-        <p>Historial Médico</p>
-        <form id="login-form">
-            <input type="text" id="username" placeholder="Usuario" required>
-            <input type="password" id="password" placeholder="Contraseña" required>
-            <button type="submit" class="btn">Ingresar</button>
-            <p id="error-message" class="error-text"></p>
-        </form>
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <div class="col-md-7 d-none d-md-flex login-brand-panel">
+                <div class="text-white p-5">
+                    <h1 class="display-4">Bienvenida, Dra. Yasmin</h1>
+                    <p class="lead">Tu sistema de gestión de historiales médicos.</p>
+                </div>
+            </div>
+            <div class="col-md-5 d-flex align-items-center justify-content-center bg-light">
+                <div class="login-container">
+                    <h2>Iniciar Sesión</h2>
+                    <form id="login-form" class="mt-4">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="username" placeholder="Usuario" required>
+                            <label for="username">Usuario</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="password" class="form-control" id="password" placeholder="Contraseña" required>
+                            <label for="password">Contraseña</label>
+                        </div>
+                        <button type="submit" id="login-button" class="btn btn-primary w-100 btn-lg">
+                            <span class="button-text">Ingresar</span>
+                            <span class="spinner-border spinner-border-sm button-spinner" style="display: none;" role="status"></span>
+                        </button>
+                        <p id="error-message" class="error-text mt-3"></p>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
     <script src="login.js"></script>
 </body>

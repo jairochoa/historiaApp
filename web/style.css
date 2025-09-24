@@ -224,3 +224,11 @@ input, textarea {
     min-height: 180px; 
     position: relative
 }
+
+.login-brand-panel {
+    background-image: linear-gradient(to top right, #ffafbd, #ffc3a0); /* Tu degradado rosa */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}

@@ -115,6 +115,26 @@ function setupEventListeners() {
         if (event.target == consultationModal) consultationModal.style.display = "none";
         if (event.target == viewModal) viewModal.style.display = "none";
     };
+
+    
+    const logoutLink = document.getElementById('logout-link'); 
+    if (logoutLink) {
+        logoutLink.addEventListener('click', async (event) => {
+            event.preventDefault(); // Prevenimos que el enlace '#' recargue la página
+            await eel.logout_py()();
+            window.location.href = 'login.html';
+        });
+}
+
+    // --- CONFIRMACIÓN ANTES DE CERRAR LA VENTANA ---
+    window.addEventListener('beforeunload', (event) => {
+        // El estándar requiere que se establezca returnValue.
+        // El navegador mostrará su propio mensaje genérico de confirmación.
+        event.preventDefault();
+        event.returnValue = '';
+    });
+
+
 }
 
 // --- MANEJADORES DE ENVÍO DE FORMULARIOS ---
