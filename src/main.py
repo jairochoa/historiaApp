@@ -196,9 +196,12 @@ def obtener_estadisticas():
 @eel.expose('logout_py')
 def logout():
     """Limpia los datos de la sesión actual."""
+    global login_exitoso
     print(f"Cerrando sesión para el usuario: {sesion_actual['usuario']}")
     sesion_actual['usuario'] = None
     sesion_actual['rol'] = None
+    
+    login_exitoso = True 
     return {'exito': True}
 
 def on_close(page, sockets):
