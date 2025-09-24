@@ -9,15 +9,85 @@ let consultaSeleccionadaId = null;
 // --- FUNCIÓN DE ARRANQUE ---
 window.onload = function() {
     setupEventListeners();
-    cargarListaPacientes();
+    showView('dashboard-view');
+    cargarDashboard();
     configurarLimitesDeFechas();
 };
 
+
+
+// --- LÓGICA DE NAVEGACIÓN ---
+/**
+ * Gestiona qué vista principal (Dashboard o Pacientes) se muestra.
+ * @param {string} viewId - El ID del div de la vista a mostrar.
+ */
+function showView(viewId) {
+    // Ocultamos todas las vistas principales
+    document.querySelectorAll('.main-view').forEach(view => {
+        view.style.display = 'none';
+    });
+    
+    const activeView = document.getElementById(viewId);
+    if (activeView) {
+        // La vista de pacientes es un .row, que es un display:flex en Bootstrap
+        activeView.style.display = (viewId === 'patients-view') ? 'flex' : 'block';
+    }
+
+    // Actualiza la clase 'active' en la barra de navegación
+    document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.dataset.view === viewId) {
+            link.classList.add('active');
+        }
+    });
+}
+
 // --- CONFIGURACIÓN DE EVENTOS PRINCIPALES ---
 function setupEventListeners() {
+
+    document.querySelectorAll('.navbar-nav .nav-link[data-view]').forEach(link => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            const viewId = event.target.dataset.view;
+            showView(viewId);
+
+            // Si hacemos clic en 'Pacientes', cargamos la lista.
+            if (viewId === 'patients-view') {
+                cargarListaPacientes();
+            }
+            // Si hacemos clic en 'Dashboard', cargamos sus estadísticas.
+            if (viewId === 'dashboard-view') {
+                cargarDashboard();
+            }
+        });
+    });
+
     // 1. BARRA DE BÚSQUEDA
     const searchBar = document.getElementById('search-bar');
     searchBar.addEventListener('keyup', () => filtrarListaPacientes(searchBar.value));
+    const clearBtn = document.getElementById('search-clear-btn');
+
+        // Evento al escribir en la barra de búsqueda
+    searchBar.addEventListener('keyup', () => {
+        const termino = searchBar.value;
+        
+        // Muestra u oculta el botón 'X' dependiendo de si hay texto
+        if (termino.length > 0) {
+            clearBtn.style.display = 'block';
+        } else {
+            clearBtn.style.display = 'none';
+        }
+        
+        filtrarListaPacientes(termino);
+    });
+
+    // Evento al hacer clic en el botón de limpiar 'X'
+    clearBtn.addEventListener('click', () => {
+        searchBar.value = ''; // Borra el texto del input
+        clearBtn.style.display = 'none'; // Oculta el botón 'X'
+        filtrarListaPacientes(''); // Restaura la lista completa de pacientes
+    });
+
 
     // 2. MODALES Y FORMULARIOS
     const patientModal = document.getElementById('add-patient-modal');
@@ -130,8 +200,12 @@ async function handleConsultationFormSubmit(event) {
 // --- FUNCIONES DE CARGA Y RENDERIZADO ---
 
 async function cargarListaPacientes() {
-    let pacientes = await eel.obtener_pacientes_py()();
-    renderizarListaPacientes(pacientes);
+    try {
+        const pacientes = await eel.obtener_pacientes_py()();
+        renderizarListaPacientes(pacientes);
+    } catch (error) {
+        console.error("Error al cargar la lista de pacientes:", error);
+    }
 }
 
 function renderizarListaPacientes(listaDePacientes) {
@@ -159,98 +233,107 @@ async function mostrarDetallesPaciente(pacienteId) {
     pacienteSeleccionadoId = pacienteId;
     const data = await eel.buscar_paciente_por_id_py(pacienteId)();
     const detailsContainer = document.getElementById('patient-details');
-    
-    if (!data.paciente) {
-        detailsContainer.innerHTML = '<div class="card"><div class="card-body text-center"><p class="text-muted">Selecciona un paciente.</p></div></div>';
-        return;
-    }
+    try {
+        if (!data.paciente) {
+            detailsContainer.innerHTML = '<div class="card"><div class="card-body text-center"><p class="text-muted">Selecciona un paciente.</p></div></div>';
+            return;
+        }
 
-    const edad = calcularEdad(data.paciente.fecha_nacimiento);
-    const nombreCompleto = `${data.paciente.nombres} ${data.paciente.apellidos}`;
-    const edadTexto = `${edad} años`;
-    const comentario = data.paciente.comentario ? `/ <span class="header-comment">${data.paciente.comentario}</span>` : '';
-    const encabezadoDinamico = `${nombreCompleto} / ${edadTexto} ${comentario}`;
-    
-    let html = `
-        <div class="card">
-            <div class="card-header"><h3 class="mb-0">${encabezadoDinamico}</h3></div>
-            <div class="card-body">
-                <table class="table table-striped table-hover mt-3 consultation-table">
-                    <thead>
-                        <tr>
-                            <th>Cédula</th>
-                            <th>Fecha de Nacimiento</th>
-                            <th>Domicilio</th>
-                            <th>Teléfono</th>
-                            <th class="text-end">Acciones</th>
-                            </tr>
-                    </thead>
-                    <tbody><tr>
-                        <td>${data.paciente.cedula}</td>
-                        <td>${data.paciente.fecha_nacimiento || ''}</td>
-                        <td>${data.paciente.domicilio || ''}</td>
-                        <td>${data.paciente.telefono || ''}</td>
+        const edad = calcularEdad(data.paciente.fecha_nacimiento);
+        const nombreCompleto = `${data.paciente.nombres} ${data.paciente.apellidos}`;
+        const edadTexto = `${edad} años`;
+        const comentario = data.paciente.comentario ? `/ <span class="header-comment">${data.paciente.comentario}</span>` : '';
+        const encabezadoDinamico = `${nombreCompleto} / ${edadTexto} ${comentario}`;
+        
+        let html = `
+            <div class="card">
+                <div class="card-header"><h3 class="mb-0">${encabezadoDinamico}</h3></div>
+                <div class="card-body">
+                    <table class="table table-striped table-hover mt-3 consultation-table">
+                        <thead>
+                            <tr>
+                                <th>Cédula</th>
+                                <th>Fecha de Nacimiento</th>
+                                <th>Domicilio</th>
+                                <th>Teléfono</th>
+                                <th class="text-end">Acciones</th>
+                                </tr>
+                        </thead>
+                        <tbody><tr>
+                            <td>${data.paciente.cedula}</td>
+                            <td>${data.paciente.fecha_nacimiento || ''}</td>
+                            <td>${data.paciente.domicilio || ''}</td>
+                            <td>${data.paciente.telefono || ''}</td>
+                            <td class="text-end">
+                                <button id="edit-patient-btn" class="btn btn-secondary btn-sm">Editar</button>
+                                <button id="delete-patient-btn" class="btn btn-danger btn-sm">Eliminar</button>
+                            </td>
+                        </tr></tbody>
+                    </table>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h4 class="mb-0">Historial de Consultas</h4>
+                        <button id="add-consultation-btn" class="btn btn-primary">Añadir Consulta</button>
+                    </div>
+        `;
+
+        if (data.consultas.length > 0) {
+            html += `<table class="table table-striped table-hover mt-3 consultation-table">
+                <thead>
+                    <tr>
+                        <th class="col-fecha">Fecha</th>
+                        <th class="col-motivo">Motivo</th>
+                        <th class="col-diagnostico">Diagnóstico</th>
+                        <th class="col-plan">Plan</th>
+                        <th class="col-acciones text-end">Acciones</th>
+                    </tr>
+                </thead><tbody>`;
+            data.consultas.forEach(consulta => {
+                html += `
+                    <tr>
+                        <td>${consulta.fecha}</td>
+                        <td>${consulta.motivo_consulta || ''}</td>
+                        <td>${consulta.diagnostico || ''}</td>
+                        <td>${consulta.plan || ''}</td>
                         <td class="text-end">
-                            <button id="edit-patient-btn" class="btn btn-secondary btn-sm">Editar</button>
-                            <button id="delete-patient-btn" class="btn btn-danger btn-sm">Eliminar</button>
+                            <button class="btn btn-sm btn-info view-consultation-btn" data-consulta-id="${consulta.id}">Ver</button>
+                            <button class="btn btn-sm btn-secondary edit-consultation-btn" data-consulta-id="${consulta.id}">Editar</button>
+                            <button class="btn btn-sm btn-danger delete-consultation-btn" data-consulta-id="${consulta.id}">Eliminar</button>
                         </td>
-                    </tr></tbody>
-                </table>
-                <hr>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h4 class="mb-0">Historial de Consultas</h4>
-                    <button id="add-consultation-btn" class="btn btn-primary">Añadir Consulta</button>
-                </div>
-    `;
+                    </tr>
+                `;
+            });
+            html += `</tbody></table>`;
+        } else {
+            html += '<p class="mt-3">No hay consultas registradas para este paciente.</p>';
+        }
+        
+        html += `</div></div>`;
+        detailsContainer.innerHTML = html;
 
-    if (data.consultas.length > 0) {
-        html += `<table class="table table-striped table-hover mt-3 consultation-table">
-            <thead>
-                <tr>
-                    <th class="col-fecha">Fecha</th>
-                    <th class="col-motivo">Motivo</th>
-                    <th class="col-diagnostico">Diagnóstico</th>
-                    <th class="col-plan">Plan</th>
-                    <th class="col-acciones text-end">Acciones</th>
-                </tr>
-            </thead><tbody>`;
-        data.consultas.forEach(consulta => {
-            html += `
-                <tr>
-                    <td>${consulta.fecha}</td>
-                    <td>${consulta.motivo_consulta || ''}</td>
-                    <td>${consulta.diagnostico || ''}</td>
-                    <td>${consulta.plan || ''}</td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-info view-consultation-btn" data-consulta-id="${consulta.id}">Ver</button>
-                        <button class="btn btn-sm btn-secondary edit-consultation-btn" data-consulta-id="${consulta.id}">Editar</button>
-                        <button class="btn btn-sm btn-danger delete-consultation-btn" data-consulta-id="${consulta.id}">Eliminar</button>
-                    </td>
-                </tr>
-            `;
-        });
-        html += `</tbody></table>`;
-    } else {
-        html += '<p class="mt-3">No hay consultas registradas para este paciente.</p>';
+        // --- ACTIVACIÓN DE BOTONES DINÁMICOS ---
+        document.getElementById('edit-patient-btn').addEventListener('click', () => abrirModalPaciente('editar', data.paciente));
+        document.getElementById('delete-patient-btn').addEventListener('click', () => eliminarPaciente(data.paciente));
+        document.getElementById('add-consultation-btn').addEventListener('click', () => abrirModalConsulta('añadir'));
+        document.querySelectorAll('.view-consultation-btn').forEach(b => b.addEventListener('click', (e) => mostrarModalDetalleConsulta(e.target.dataset.consultaId)));
+        document.querySelectorAll('.edit-consultation-btn').forEach(b => b.addEventListener('click', (e) => abrirModalConsulta('editar', e.target.dataset.consultaId)));
+        document.querySelectorAll('.delete-consultation-btn').forEach(b => b.addEventListener('click', (e) => eliminarConsulta(e.target.dataset.consultaId)));
+    } catch (error) {
+        console.error(`Error al mostrar detalles para el paciente ${pacienteId}:`, error);
     }
-    
-    html += `</div></div>`;
-    detailsContainer.innerHTML = html;
-
-    // --- ACTIVACIÓN DE BOTONES DINÁMICOS ---
-    document.getElementById('edit-patient-btn').addEventListener('click', () => abrirModalPaciente('editar', data.paciente));
-    document.getElementById('delete-patient-btn').addEventListener('click', () => eliminarPaciente(data.paciente));
-    document.getElementById('add-consultation-btn').addEventListener('click', () => abrirModalConsulta('añadir'));
-    document.querySelectorAll('.view-consultation-btn').forEach(b => b.addEventListener('click', (e) => mostrarModalDetalleConsulta(e.target.dataset.consultaId)));
-    document.querySelectorAll('.edit-consultation-btn').forEach(b => b.addEventListener('click', (e) => abrirModalConsulta('editar', e.target.dataset.consultaId)));
-    document.querySelectorAll('.delete-consultation-btn').forEach(b => b.addEventListener('click', (e) => eliminarConsulta(e.target.dataset.consultaId)));
 }
 
 // --- FUNCIONES AUXILIARES ---
 
 async function filtrarListaPacientes(termino) {
-    const pacientesFiltrados = await eel.buscar_pacientes_py(termino)();
-    renderizarListaPacientes(pacientesFiltrados);
+    try {
+        // Llama a la función de Python que busca en la BD
+        const pacientesFiltrados = await eel.buscar_pacientes_py(termino)();
+        // Reutiliza nuestra función de "dibujo" para mostrar los resultados
+        renderizarListaPacientes(pacientesFiltrados);
+    } catch (error) {
+        console.error("Error al filtrar pacientes:", error);
+    }
 }
 
 function configurarLimitesDeFechas() {
@@ -373,4 +456,20 @@ function calcularEdad(fechaNacimientoStr) {
         edad--;
     }
     return edad;
+}
+
+async function cargarDashboard() {
+    console.log("Pidiendo estadísticas a Python para el dashboard...");
+    try {
+        // Llama a la función de Python que acabamos de crear
+        const stats = await eel.obtener_estadisticas_py()();
+        
+        if (stats) {
+            // Encuentra el h1 por su id y actualiza su contenido
+            document.getElementById('stat-total-pacientes').textContent = stats.total_pacientes;
+        }
+    } catch (error) {
+        console.error("Error al cargar los datos del dashboard:", error);
+        document.getElementById('stat-total-pacientes').textContent = 'E'; // 'E' de Error
+    }
 }

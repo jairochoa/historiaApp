@@ -127,6 +127,15 @@ def eliminar_paciente(paciente_id):
     else:
         return {'exito': False, 'mensaje': 'Error al eliminar el paciente.'}
 
+def iniciar_app():
+    """
+    Modificamos la función para que inicie en la pantalla de login.
+    """
+    print("Iniciando aplicación en la pantalla de login...")
+    # La aplicación ahora empieza en login.html
+    eel.start('login.html', size=(600, 500), port=0)
+    print("Aplicación cerrada.")
+
 @eel.expose('buscar_pacientes_py')
 def buscar_pacientes(termino):
     """Función intermediaria para buscar pacientes desde JS."""
@@ -161,25 +170,7 @@ def modificar_consulta(consulta_id, consulta_data):
     else:
         return {'exito': False, 'mensaje': 'Error al actualizar la consulta.'}
 
-@eel.expose('obtener_estadisticas_py')
-def obtener_estadisticas():
-    """
-    Calcula las estadísticas clave para el dashboard y las devuelve.
-    Por ahora, solo cuenta el total de pacientes.
-    """
-    try:
-        # Llama a la función que ya teníamos para obtener la lista
-        todos_los_pacientes = gestor.obtener_todos_los_pacientes()
-        
-        # Prepara un diccionario con las estadísticas
-        stats = {
-            'total_pacientes': len(todos_los_pacientes)
-            # Aquí añadiremos más estadísticas en el futuro
-        }
-        return stats
-    except Exception as e:
-        print(f"Error al calcular estadísticas: {e}")
-        return {'total_pacientes': 'Error'}
+
 
 
 if __name__ == "__main__":

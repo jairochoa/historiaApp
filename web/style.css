@@ -93,7 +93,7 @@ body {
 /* Estructura de rejilla para los formularios DENTRO de los modales */
 .form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 15px;
 }
 
@@ -101,6 +101,19 @@ body {
     grid-column: 1 / -1;
 }
 
+.form.grid-span-2 {
+    grid-column: span 2;
+}
+
+/* Helper opcional para que un item ocupe 3 columnas */
+.form.grid-span-3 {
+    grid-column: span 3;
+}
+
+/* Helper para que un item ocupe las 4 columnas (similar a .full-width) */
+.form.grid-span-4 {
+    grid-column: span 4;
+}
 
 /* ==========================================================================
    4. ESTILOS PARA LA PANTALLA DE LOGIN
@@ -128,19 +141,7 @@ body {
     font-size: 0.9em;
 }
 
-.grid-span-2 {
-    grid-column: span 2;
-}
 
-/* Helper opcional para que un item ocupe 3 columnas */
-.grid-span-3 {
-    grid-column: span 3;
-}
-
-/* Helper para que un item ocupe las 4 columnas (similar a .full-width) */
-.grid-span-4 {
-    grid-column: span 4;
-}
 
 /* --- ESTILOS PARA LA TABLA DE CONSULTAS --- */
 
@@ -163,7 +164,40 @@ body {
 
 /* 3. Asignamos un ancho en porcentaje a cada columna */
 .consultation-table .col-fecha { width: 10%; }
-.consultation-table .col-motivo { width: 25%; }
-.consultation-table .col-diagnostico { width: 25%; }
+.consultation-table .col-motivo { width: 20%; }
+.consultation-table .col-diagnostico { width: 30%; }
 .consultation-table .col-plan { width: 25%; }
 .consultation-table .col-acciones { width: 15%; }
+
+/* ==========================================================================
+   RESET DE CURSOR Y SELECCIÓN PARA UNA EXPERIENCIA DE ESCRITORIO
+   ========================================================================== */
+
+/* 1. Por defecto, en toda la aplicación, el cursor será la flecha y no se podrá seleccionar texto. */
+body, .navbar, .card, .card-header, .card-body, .modal-content, h1, h2, h3, h4, h5, p, li, th, td, label, strong {
+    cursor: default; /* El cursor de flecha normal */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* 2. Le devolvemos el cursor de "mano" a los elementos que son explícitamente clicables. */
+button, .btn, .list-group-item-action, .close-btn, a.nav-link {
+    cursor: pointer;
+}
+
+/* 3. Le devolvemos el cursor de "texto" (I-beam) y la capacidad de selección
+      únicamente a los campos donde se puede escribir. */
+input, textarea {
+    cursor: text;
+    user-select: auto; /* Permite la selección de texto normal */
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+}
+
+/* en web/style.css */
+#search-clear-btn {
+    display: none; /* Oculto por defecto */
+}
