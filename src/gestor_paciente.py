@@ -559,3 +559,22 @@ def obtener_distribucion_edades():
 #     print("\n--- Lista de todos los pacientes ---")
 #     for p in todos_los_pacientes:
 #         print(f"  - ID: {p['id']}, Cédula: {p['cedula']}, Nombre: {p['nombres']} {p['apellidos']}")
+
+def eliminar_todas_las_consultas():
+    """
+    Elimina TODOS los registros de la tabla consultas.
+    ADVERTENCIA: Esta acción es permanente y no se puede deshacer.
+    """
+    conn = obtener_conexion_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("DELETE FROM consultas;")
+        conn.commit()
+        print("Todos los registros de consultas han sido eliminados.")
+        return True
+    except Exception as e:
+        print(f"Error al eliminar consultas: {e}")
+        return False
+    finally:
+        conn.close()
