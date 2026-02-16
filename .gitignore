@@ -2,14 +2,14 @@
 .virtual_env/
 
 # Base de Datos (¡Contiene datos médicos sensibles!)
-/data/pacientes.db
-/data/*.db
+#/data/pacientes.db
+#/data/*.db
 
 # Imágenes subidas (¡Contiene datos médicos sensibles!)
-/data/imagenes/
+#/data/imagenes/
 
 # Archivos de configuración que no deben ser públicos
-/config/config.yaml
+#/config/config.yaml
 
 # Archivos de caché y logs
 __pycache__/
@@ -20,6 +20,6 @@ __pycache__/
 .vscode/
 .idea/
 
-/web/script_.js
-/web/style_.css
-/web/main_.html
+#/web/script_.js
+#/web/style_.css
+#/web/main_.html
