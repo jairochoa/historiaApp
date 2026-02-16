@@ -1,6 +1,6 @@
 import sqlite3
 import hashlib # Librería para encriptar contraseñas
-from .database import obtener_conexion_db
+from database import obtener_conexion_db
 from datetime import datetime, date
 
 # --- Funciones de Usuarios y Seguridad ---

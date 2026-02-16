@@ -1,7 +1,7 @@
 import sys
 import eel
 import os
-from . import gestor_paciente as gestor # Importamos nuestro módulo de lógica
+import gestor_paciente as gestor # Importamos nuestro módulo de lógica
 
 # Inicializa Eel y le dice dónde están los archivos de la interfaz ('web')
 ruta_script = os.path.dirname(os.path.abspath(__file__))
